@@ -83,7 +83,7 @@ void generateOpenCuboid(in vec3 center, in vec3 scale)
 }
 
 
-// is called up to #OPEN_CUBOID_VERTICES# times,
+// is called up to 12 times,
 // each one with the world position of the current vertex and it's normal (regarding the provoking vertex)
 void openCuboidEmit(in vec4 position, in vec3 normal)
 {

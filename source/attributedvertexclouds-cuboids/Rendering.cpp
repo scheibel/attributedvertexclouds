@@ -41,6 +41,8 @@ void Rendering::initialize()
     glGenBuffers(1, &m_vertices);
     glGenVertexArrays(1, &m_vao);
 
+    initializeVAO();
+
     m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
     m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -65,8 +67,8 @@ void Rendering::createGeometry()
     m_avc.resize(1);
 
     m_avc.center.front() = glm::vec2(0.0f, 0.0f);
-    m_avc.extent.front() = glm::vec2(0.5f, 0.5f);
-    m_avc.heightRange.front() = glm::vec2(0.0f, 0.5f);
+    m_avc.extent.front() = glm::vec2(1.0f, 1.0f);
+    m_avc.heightRange.front() = glm::vec2(0.0f, 0.04f);
     m_avc.colorValue.front() = 0.5f;
     m_avc.gradientIndex.front() = 0;
 }
@@ -95,6 +97,9 @@ void Rendering::initializeVAO()
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 bool Rendering::loadShader()
@@ -164,19 +169,19 @@ bool Rendering::loadShader()
 
 void Rendering::updateUniforms()
 {
-    static const auto eye = glm::vec3(0.0f, 3.0f, 3.0f);
+    static const auto eye = glm::vec3(2.0f, 2.0f, 2.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
     static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
     static const auto view = glm::lookAt(eye, center, up);
 
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.1f, 10.0f) * view;
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.1f, 30.0f) * view;
 
 
     const auto viewProjectionLocation = glGetUniformLocation(m_program, "viewProjection");
     glUseProgram(m_program);
     glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
 
-    const auto viewProjectionLocation2 = glGetUniformLocation(m_program, "viewProjection");
+    const auto viewProjectionLocation2 = glGetUniformLocation(m_depthOnlyProgram, "viewProjection");
     glUseProgram(m_depthOnlyProgram);
     glUniformMatrix4fv(viewProjectionLocation2, 1, GL_FALSE, glm::value_ptr(viewProjection));
 

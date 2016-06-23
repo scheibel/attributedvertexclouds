@@ -16,6 +16,6 @@ void main()
     gl_Position = vec4(in_center.x, in_heightRange.x, in_center.y, 1.0);
     
     v_extent = in_extent;
-    v_color = in_colorValue * mix(vec3(0.4, 0, 0), vec3(0, 0.4, 0), float(bool(in_gradientIndex)));
+    v_color = in_colorValue * mix(vec3(1, 0, 0), vec3(0, 1, 0), float(bool(in_gradientIndex)));
     v_height = in_heightRange.y;
 }
