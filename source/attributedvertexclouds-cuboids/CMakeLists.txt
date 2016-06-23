@@ -26,8 +26,14 @@ message(STATUS "Example ${target}")
 set(sources
     main.cpp
     
-    rendering.h
-    rendering.cpp
+    common.h
+    common.cpp
+    
+    Rendering.h
+    Rendering.cpp
+    
+    CuboidVertexCloud.h
+    CuboidVertexCloud.cpp
 )
 
 

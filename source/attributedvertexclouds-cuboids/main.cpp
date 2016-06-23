@@ -8,8 +8,10 @@
 // C++ binding for the OpenGL API. 
 // https://github.com/cginternals/glbinding
 #include <glbinding/Binding.h>
+#include <glbinding/gl/gl.h>
+#include <glbinding/callbacks.h>
 
-#include "rendering.h"
+#include "Rendering.h"
 
 
 // From http://en.cppreference.com/w/cpp/language/namespace:
@@ -19,16 +21,15 @@
 namespace
 {
 
-auto exercise = rendering();
+auto exercise = Rendering();
 
-const auto canvasWidth = 800; // in pixel
-const auto canvasHeight = 600; // in pixel
+const auto canvasWidth = 1440; // in pixel
+const auto canvasHeight = 900; // in pixel
 
 // The review mode is used by the tutors to semi-automatically unzip,
 // configure, compile, and review  your submissions. The macro is
 // defined via the CMake configuration and should only be used within
 // the main.cpp (this) file.
-#ifndef REVIEW_MODE
 
 // "The size callback ... which is called when the window is resized."
 // http://www.glfw.org/docs/latest/group__window.html#gaa40cd24840daa8c62f36cafc847c72b6
@@ -37,7 +38,14 @@ void resizeCallback(GLFWwindow * /*window*/, int width, int height)
     exercise.resize(width, height);
 }
 
-#endif
+void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
+{
+    if (key == GLFW_KEY_F5 && action == GLFW_RELEASE)
+    {
+        std::cout << "Reload shaders" << std::endl;
+        exercise.loadShader();
+    }
+}
 
 
 // "In case a GLFW function fails, an error is reported to the GLFW 
@@ -52,7 +60,7 @@ void errorCallback(int errnum, const char * errmsg)
 }
 
 
-int main(int argc, char ** argv)
+int main(int /*argc*/, char ** /*argv*/)
 {
     if (!glfwInit())
     {
@@ -70,13 +78,6 @@ int main(int argc, char ** argv)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef REVIEW_MODE
-    if (argc > 1)
-    {
-        glfwWindowHint(GLFW_VISIBLE, 0);
-    }
-#endif
-
     GLFWwindow * window = glfwCreateWindow(canvasWidth, canvasHeight, "", nullptr, nullptr);
     if (!window)
     {
@@ -85,20 +86,29 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-#ifndef REVIEW_MODE
     glfwSetFramebufferSizeCallback(window, resizeCallback);
-#endif
+    glfwSetKeyCallback(window, keyCallback);
 
     glfwMakeContextCurrent(window);
 
     glbinding::Binding::initialize(false);
+
+    glbinding::setAfterCallback([](const glbinding::FunctionCall & functionCall) {
+        gl::GLenum error = glbinding::Binding::GetError.directCall();
+
+        if (error != gl::GL_NO_ERROR)
+        {
+            throw error;
+        }
+    });
+
+    glbinding::setCallbackMaskExcept(glbinding::CallbackMask::After, { "glGetError" });
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     exercise.resize(width, height);
     exercise.initialize();
 
-#ifndef REVIEW_MODE
     while (!glfwWindowShouldClose(window)) // main loop
     {
         glfwPollEvents();
@@ -107,11 +117,6 @@ int main(int argc, char ** argv)
 
         glfwSwapBuffers(window);
     }
-#else
-    exercise.execute();
-
-    captureAsPPM("e2task1.ppm", canvasWidth, canvasHeight);
-#endif
 
     glfwMakeContextCurrent(nullptr);
 
