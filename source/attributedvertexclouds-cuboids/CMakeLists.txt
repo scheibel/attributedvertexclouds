@@ -38,6 +38,13 @@ set(sources
     Rendering.h
     Rendering.cpp
     
+    Cuboid.h
+    Cuboid.cpp
+    
+#    CuboidTriangles.h
+#    CuboidTriangles.cpp
+#    CuboidTriangleStrip.h
+#    CuboidTriangleStrip.cpp
     CuboidVertexCloud.h
     CuboidVertexCloud.cpp
 )

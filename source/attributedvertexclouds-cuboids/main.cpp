@@ -21,7 +21,7 @@
 namespace
 {
 
-auto exercise = Rendering();
+auto rendering = Rendering();
 
 const auto canvasWidth = 1440; // in pixel
 const auto canvasHeight = 900; // in pixel
@@ -35,7 +35,7 @@ const auto canvasHeight = 900; // in pixel
 // http://www.glfw.org/docs/latest/group__window.html#gaa40cd24840daa8c62f36cafc847c72b6
 void resizeCallback(GLFWwindow * /*window*/, int width, int height)
 {
-    exercise.resize(width, height);
+    rendering.resize(width, height);
 }
 
 void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
@@ -43,12 +43,17 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
     if (key == GLFW_KEY_F5 && action == GLFW_RELEASE)
     {
         std::cout << "Reload shaders" << std::endl;
-        exercise.loadShader();
+        rendering.reloadShaders();
     }
 
     if (key == GLFW_KEY_M && action == GLFW_RELEASE)
     {
-        exercise.toggleMeasurements();
+        rendering.toggleMeasurements();
+    }
+
+    if (key >= GLFW_KEY_1 && key <= GLFW_KEY_3 && action == GLFW_RELEASE)
+    {
+        rendering.setTechnique(key - GLFW_KEY_1);
     }
 }
 
@@ -111,14 +116,14 @@ int main(int /*argc*/, char ** /*argv*/)
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    exercise.resize(width, height);
-    exercise.initialize();
+    rendering.resize(width, height);
+    rendering.initialize();
 
     while (!glfwWindowShouldClose(window)) // main loop
     {
         glfwPollEvents();
 
-        exercise.render();
+        rendering.render();
 
         glfwSwapBuffers(window);
     }

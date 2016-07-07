@@ -9,6 +9,13 @@
 // For more information on how to write C++ please adhere to: 
 // http://cginternals.github.io/guidelines/cpp/index.html
 
+enum class CuboidTechnique
+{
+    Triangles,
+    TriangleStrip,
+    VertexCloud
+};
+
 class Rendering
 {
 public:
@@ -16,31 +23,23 @@ public:
     ~Rendering();
 
     void initialize();
-    bool loadShader();
     void createGeometry();
-    void initializeVAO();
-    void updateUniforms();
 
     void resize(int w, int h);
     void render();
 
+    void setTechnique(int i);
     void toggleMeasurements();
+    void reloadShaders();
 
-    void measure(std::function<void()> callback, bool on) const;
+    void measureGPU(const std::string & name, std::function<void()> callback, bool on) const;
+    void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
+    CuboidTechnique m_current;
     CuboidVertexCloud m_avc;
 
     gl::GLuint m_query;
-
-    gl::GLuint m_vertices;
-    gl::GLuint m_vao;
-
-    gl::GLuint m_vertexShader;
-    gl::GLuint m_geometryShader;
-    gl::GLuint m_fragmentShader;
-    gl::GLuint m_program;
-    gl::GLuint m_depthOnlyProgram;
 
     int m_width;
     int m_height;
@@ -48,4 +47,6 @@ protected:
     std::chrono::high_resolution_clock::time_point m_start;
 
     bool m_measure;
+
+    void updateUniforms();
 };
