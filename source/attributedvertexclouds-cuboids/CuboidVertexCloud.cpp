@@ -38,16 +38,12 @@ void CuboidVertexCloud::initialize()
     m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    m_programs.resize(2);
+    m_programs.resize(1);
     m_programs[0] = glCreateProgram();
-    m_programs[1] = glCreateProgram();
 
     glAttachShader(m_programs[0], m_vertexShader);
     glAttachShader(m_programs[0], m_geometryShader);
     glAttachShader(m_programs[0], m_fragmentShader);
-
-    glAttachShader(m_programs[1], m_vertexShader);
-    glAttachShader(m_programs[1], m_geometryShader);
 
     loadShader();
 }
@@ -59,17 +55,17 @@ void CuboidVertexCloud::initializeVAO()
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
     glBufferData(GL_ARRAY_BUFFER, byteSize(), nullptr, GL_STATIC_DRAW);
 
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 0, size() * sizeof(float) * 2, center.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 2, size() * sizeof(float) * 2, extent.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 4, size() * sizeof(float) * 2, heightRange.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 6, size() * sizeof(float) * 1, colorValue.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 7, size() * sizeof(float) * 1, gradientIndex.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 2, m_center.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 2, verticesCount() * sizeof(float) * 2, m_extent.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 4, verticesCount() * sizeof(float) * 2, m_heightRange.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_colorValue.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 7, verticesCount() * sizeof(float) * 1, m_gradientIndex.data());
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 0));
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 2));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 4));
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(size() * sizeof(float) * 6));
-    glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(size() * sizeof(float) * 7));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 2));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 4));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
+    glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 7));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -122,10 +118,6 @@ bool CuboidVertexCloud::loadShader()
 
     success &= checkForLinkerError(m_programs[0], "program");
 
-    glLinkProgram(m_programs[1]);
-
-    success &= checkForLinkerError(m_programs[1], "depth only program");
-
     if (!success)
     {
         return false;
@@ -138,30 +130,31 @@ bool CuboidVertexCloud::loadShader()
 
 void CuboidVertexCloud::setCube(size_t index, const Cuboid & cuboid)
 {
-    center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
-    extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
-    heightRange[index] = glm::vec2(cuboid.center.y - cuboid.extent.y / 2.0f, cuboid.extent.y);
-    colorValue[index] = cuboid.colorValue;
-    gradientIndex[index] = cuboid.gradientIndex;
-}
-
-void CuboidVertexCloud::setCube(size_t index, Cuboid && cuboid)
-{
-    center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
-    extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
-    heightRange[index] = glm::vec2(cuboid.center.y - cuboid.extent.y / 2.0f, cuboid.extent.y);
-    colorValue[index] = cuboid.colorValue;
-    gradientIndex[index] = cuboid.gradientIndex;
+    m_center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
+    m_extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
+    m_heightRange[index] = glm::vec2(cuboid.center.y - cuboid.extent.y / 2.0f, cuboid.extent.y);
+    m_colorValue[index] = cuboid.colorValue;
+    m_gradientIndex[index] = cuboid.gradientIndex;
 }
 
 size_t CuboidVertexCloud::size() const
 {
-    return center.size();
+    return m_center.size();
+}
+
+size_t CuboidVertexCloud::verticesPerCuboid() const
+{
+    return 1;
+}
+
+size_t CuboidVertexCloud::verticesCount() const
+{
+    return size() * verticesPerCuboid();
 }
 
 size_t CuboidVertexCloud::byteSize() const
 {
-    return size() * vertexByteSize();
+    return verticesPerCuboid() * size() * vertexByteSize();
 }
 
 size_t CuboidVertexCloud::vertexByteSize() const
@@ -176,34 +169,35 @@ size_t CuboidVertexCloud::componentCount() const
 
 void CuboidVertexCloud::reserve(size_t count)
 {
-    center.reserve(count);
-    extent.reserve(count);
-    heightRange.reserve(count);
-    colorValue.reserve(count);
-    gradientIndex.reserve(count);
+    m_center.reserve(count);
+    m_extent.reserve(count);
+    m_heightRange.reserve(count);
+    m_colorValue.reserve(count);
+    m_gradientIndex.reserve(count);
 }
 
 void CuboidVertexCloud::resize(size_t count)
 {
-    center.resize(count);
-    extent.resize(count);
-    heightRange.resize(count);
-    colorValue.resize(count);
-    gradientIndex.resize(count);
+    m_center.resize(count);
+    m_extent.resize(count);
+    m_heightRange.resize(count);
+    m_colorValue.resize(count);
+    m_gradientIndex.resize(count);
 }
 
 void CuboidVertexCloud::render()
 {
     glBindVertexArray(m_vao);
 
-    // Pre-Z Pass
-    //glDepthFunc(GL_LEQUAL);
-    //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    //glUseProgram(m_depthOnlyProgram);
-    //glDrawArrays(GL_POINTS, 0, m_avc.size());
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
-    // Color Pass
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDepthMask(GL_TRUE);
+
     glUseProgram(m_programs[0]);
     glDrawArrays(GL_POINTS, 0, size());
 

@@ -1,5 +1,4 @@
 #version 330
-#extension GL_ARB_shading_language_include : require
 
 in vec2  in_center;
 in vec2  in_extent;

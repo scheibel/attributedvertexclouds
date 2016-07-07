@@ -24,9 +24,10 @@ public:
     bool loadShader();
 
     void setCube(size_t index, const Cuboid & cuboid);
-    void setCube(size_t index, Cuboid && cuboid);
 
     size_t size() const;
+    size_t verticesPerCuboid() const;
+    size_t verticesCount() const;
     size_t byteSize() const;
     size_t vertexByteSize() const;
     size_t componentCount() const;
@@ -36,11 +37,11 @@ public:
 
     const std::vector<gl::GLuint> & programs() const;
 public:
-    std::vector<glm::vec2> center;
-    std::vector<glm::vec2> extent;
-    std::vector<glm::vec2> heightRange;
-    std::vector<float> colorValue;
-    std::vector<int> gradientIndex;
+    std::vector<glm::vec2> m_center;
+    std::vector<glm::vec2> m_extent;
+    std::vector<glm::vec2> m_heightRange;
+    std::vector<float> m_colorValue;
+    std::vector<int> m_gradientIndex;
 
     gl::GLuint m_vertices;
     gl::GLuint m_vao;

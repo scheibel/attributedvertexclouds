@@ -1,5 +1,4 @@
 #version 330
-#extension GL_ARB_shading_language_include : require
 
 layout (points) in;
 layout (triangle_strip, max_vertices = 12) out;

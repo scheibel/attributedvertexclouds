@@ -1,6 +1,8 @@
 
 #include "CuboidTriangles.h"
 
+#include <algorithm>
+
 #include <glbinding/gl/gl.h>
 
 #include "common.h"
@@ -11,7 +13,6 @@ CuboidTriangles::CuboidTriangles()
 : m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
-, m_geometryShader(0)
 , m_fragmentShader(0)
 {
 }
@@ -35,7 +36,6 @@ void CuboidTriangles::initialize()
     initializeVAO();
 
     m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
     m_programs.resize(2);
@@ -43,11 +43,9 @@ void CuboidTriangles::initialize()
     m_programs[1] = glCreateProgram();
 
     glAttachShader(m_programs[0], m_vertexShader);
-    glAttachShader(m_programs[0], m_geometryShader);
     glAttachShader(m_programs[0], m_fragmentShader);
 
     glAttachShader(m_programs[1], m_vertexShader);
-    glAttachShader(m_programs[1], m_geometryShader);
 
     loadShader();
 }
@@ -59,23 +57,20 @@ void CuboidTriangles::initializeVAO()
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
     glBufferData(GL_ARRAY_BUFFER, byteSize(), nullptr, GL_STATIC_DRAW);
 
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 0, size() * sizeof(float) * 2, center.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 2, size() * sizeof(float) * 2, extent.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 4, size() * sizeof(float) * 2, heightRange.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 6, size() * sizeof(float) * 1, colorValue.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 7, size() * sizeof(float) * 1, gradientIndex.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 3, m_vertex.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 3, verticesCount() * sizeof(float) * 3, m_normal.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_colorValue.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 7, verticesCount() * sizeof(float) * 1, m_gradientIndex.data());
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 0));
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 2));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 4));
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(size() * sizeof(float) * 6));
-    glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(size() * sizeof(float) * 7));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 7));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
-    glEnableVertexAttribArray(4);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -83,7 +78,7 @@ void CuboidTriangles::initializeVAO()
 
 bool CuboidTriangles::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/cuboids-avc/standard.vert");
+    const auto vertexShaderSource = textFromFile("data/shaders/cuboids-triangles/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
@@ -91,17 +86,6 @@ bool CuboidTriangles::loadShader()
     glCompileShader(m_vertexShader);
 
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
-
-
-    const auto geometryShaderSource = textFromFile("data/shaders/cuboids-avc/standard.geom");
-    const auto geometryShaderSource_ptr = geometryShaderSource.c_str();
-    if(geometryShaderSource_ptr)
-        glShaderSource(m_geometryShader, 1, &geometryShaderSource_ptr, 0);
-
-    glCompileShader(m_geometryShader);
-
-    success &= checkForCompilationError(m_geometryShader, "geometry shader");
-
 
     const auto fragmentShaderSource = textFromFile("data/shaders/visualization.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
@@ -138,30 +122,120 @@ bool CuboidTriangles::loadShader()
 
 void CuboidTriangles::setCube(size_t index, const Cuboid & cuboid)
 {
-    center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
-    extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
-    heightRange[index] = glm::vec2(cuboid.center.y - cuboid.extent.y / 2.0f, cuboid.extent.y);
-    colorValue[index] = cuboid.colorValue;
-    gradientIndex[index] = cuboid.gradientIndex;
-}
+    static const glm::vec3 NEGATIVE_X = glm::vec3(-1.0, 0.0, 0.0);
+    //static const glm::vec3 NEGATIVE_Y = glm::vec3(0.0, -1.0, 0.0);
+    static const glm::vec3 NEGATIVE_Z = glm::vec3(0.0, 0.0, -1.0);
+    static const glm::vec3 POSITIVE_X = glm::vec3(1.0, 0.0, 0.0);
+    static const glm::vec3 POSITIVE_Y = glm::vec3(0.0, 1.0, 0.0);
+    static const glm::vec3 POSITIVE_Z = glm::vec3(0.0, 0.0, 1.0);
 
-void CuboidTriangles::setCube(size_t index, Cuboid && cuboid)
-{
-    center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
-    extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
-    heightRange[index] = glm::vec2(cuboid.center.y - cuboid.extent.y / 2.0f, cuboid.extent.y);
-    colorValue[index] = cuboid.colorValue;
-    gradientIndex[index] = cuboid.gradientIndex;
+    static const glm::vec3 vertices[8] = {
+        glm::vec3(-0.5f, 0.5f, -0.5f), // A = H
+        glm::vec3(-0.5f, 0.5f, 0.5f), // B = F
+        glm::vec3(0.5f, 0.5f, -0.5f), // C = J
+        glm::vec3(0.5f, 0.5f, 0.5f), // D
+        glm::vec3(0.5f, -0.5f, 0.5f), // E = L
+        glm::vec3(-0.5f, -0.5f, 0.5f), // G
+        glm::vec3(-0.5f, -0.5f, -0.5f), // I
+        glm::vec3(0.5f, -0.5f, -0.5f), // K
+    };
+
+    m_normal[verticesPerCuboid() * index + 0] = NEGATIVE_X;
+    m_normal[verticesPerCuboid() * index + 1] = NEGATIVE_X;
+    m_normal[verticesPerCuboid() * index + 2] = NEGATIVE_X;
+    m_normal[verticesPerCuboid() * index + 3] = NEGATIVE_X;
+    m_normal[verticesPerCuboid() * index + 4] = NEGATIVE_X;
+    m_normal[verticesPerCuboid() * index + 5] = NEGATIVE_X;
+
+    m_normal[verticesPerCuboid() * index + 6] = NEGATIVE_Z;
+    m_normal[verticesPerCuboid() * index + 7] = NEGATIVE_Z;
+    m_normal[verticesPerCuboid() * index + 8] = NEGATIVE_Z;
+    m_normal[verticesPerCuboid() * index + 9] = NEGATIVE_Z;
+    m_normal[verticesPerCuboid() * index + 10] = NEGATIVE_Z;
+    m_normal[verticesPerCuboid() * index + 11] = NEGATIVE_Z;
+
+    m_normal[verticesPerCuboid() * index + 12] = POSITIVE_X;
+    m_normal[verticesPerCuboid() * index + 13] = POSITIVE_X;
+    m_normal[verticesPerCuboid() * index + 14] = POSITIVE_X;
+    m_normal[verticesPerCuboid() * index + 15] = POSITIVE_X;
+    m_normal[verticesPerCuboid() * index + 16] = POSITIVE_X;
+    m_normal[verticesPerCuboid() * index + 17] = POSITIVE_X;
+
+    m_normal[verticesPerCuboid() * index + 18] = POSITIVE_Z;
+    m_normal[verticesPerCuboid() * index + 19] = POSITIVE_Z;
+    m_normal[verticesPerCuboid() * index + 20] = POSITIVE_Z;
+    m_normal[verticesPerCuboid() * index + 21] = POSITIVE_Z;
+    m_normal[verticesPerCuboid() * index + 22] = POSITIVE_Z;
+    m_normal[verticesPerCuboid() * index + 23] = POSITIVE_Z;
+
+    m_normal[verticesPerCuboid() * index + 24] = POSITIVE_Y;
+    m_normal[verticesPerCuboid() * index + 25] = POSITIVE_Y;
+    m_normal[verticesPerCuboid() * index + 26] = POSITIVE_Y;
+    m_normal[verticesPerCuboid() * index + 27] = POSITIVE_Y;
+    m_normal[verticesPerCuboid() * index + 28] = POSITIVE_Y;
+    m_normal[verticesPerCuboid() * index + 29] = POSITIVE_Y;
+
+    m_vertex[verticesPerCuboid() * index + 0] = vertices[1];
+    m_vertex[verticesPerCuboid() * index + 1] = vertices[0];
+    m_vertex[verticesPerCuboid() * index + 2] = vertices[5];
+    m_vertex[verticesPerCuboid() * index + 3] = vertices[5];
+    m_vertex[verticesPerCuboid() * index + 4] = vertices[0];
+    m_vertex[verticesPerCuboid() * index + 5] = vertices[6];
+
+    m_vertex[verticesPerCuboid() * index + 6] = vertices[6];
+    m_vertex[verticesPerCuboid() * index + 7] = vertices[0];
+    m_vertex[verticesPerCuboid() * index + 8] = vertices[7];
+    m_vertex[verticesPerCuboid() * index + 9] = vertices[7];
+    m_vertex[verticesPerCuboid() * index + 10] = vertices[0];
+    m_vertex[verticesPerCuboid() * index + 11] = vertices[2];
+
+    m_vertex[verticesPerCuboid() * index + 12] = vertices[2];
+    m_vertex[verticesPerCuboid() * index + 13] = vertices[3];
+    m_vertex[verticesPerCuboid() * index + 14] = vertices[7];
+    m_vertex[verticesPerCuboid() * index + 15] = vertices[7];
+    m_vertex[verticesPerCuboid() * index + 16] = vertices[3];
+    m_vertex[verticesPerCuboid() * index + 17] = vertices[4];
+
+    m_vertex[verticesPerCuboid() * index + 18] = vertices[4];
+    m_vertex[verticesPerCuboid() * index + 19] = vertices[3];
+    m_vertex[verticesPerCuboid() * index + 20] = vertices[5];
+    m_vertex[verticesPerCuboid() * index + 21] = vertices[5];
+    m_vertex[verticesPerCuboid() * index + 22] = vertices[3];
+    m_vertex[verticesPerCuboid() * index + 23] = vertices[1];
+
+    m_vertex[verticesPerCuboid() * index + 24] = vertices[1];
+    m_vertex[verticesPerCuboid() * index + 25] = vertices[3];
+    m_vertex[verticesPerCuboid() * index + 26] = vertices[0];
+    m_vertex[verticesPerCuboid() * index + 27] = vertices[0];
+    m_vertex[verticesPerCuboid() * index + 28] = vertices[3];
+    m_vertex[verticesPerCuboid() * index + 29] = vertices[2];
+
+    for (int i = 0; i < verticesPerCuboid(); ++i)
+    {
+        m_vertex[verticesPerCuboid() * index + i] = cuboid.center + cuboid.extent * m_vertex[verticesPerCuboid() * index + i];
+        m_colorValue[verticesPerCuboid() * index + i] = cuboid.colorValue;
+        m_gradientIndex[verticesPerCuboid() * index + i] = cuboid.gradientIndex;
+    }
 }
 
 size_t CuboidTriangles::size() const
 {
-    return center.size();
+    return m_multiStarts.size();
+}
+
+size_t CuboidTriangles::verticesPerCuboid() const
+{
+    return 36;
+}
+
+size_t CuboidTriangles::verticesCount() const
+{
+    return size() * verticesPerCuboid();
 }
 
 size_t CuboidTriangles::byteSize() const
 {
-    return size() * vertexByteSize();
+    return verticesCount() * vertexByteSize();
 }
 
 size_t CuboidTriangles::vertexByteSize() const
@@ -176,36 +250,65 @@ size_t CuboidTriangles::componentCount() const
 
 void CuboidTriangles::reserve(size_t count)
 {
-    center.reserve(count);
-    extent.reserve(count);
-    heightRange.reserve(count);
-    colorValue.reserve(count);
-    gradientIndex.reserve(count);
+    m_vertex.reserve(count * verticesPerCuboid());
+    m_normal.reserve(count * verticesPerCuboid());
+    m_colorValue.reserve(count * verticesPerCuboid());
+    m_gradientIndex.reserve(count * verticesPerCuboid());
+
+    m_multiStarts.resize(count);
+    m_multiCounts.resize(count);
+
+    size_t next = 0;
+    std::fill(m_multiCounts.begin(), m_multiCounts.end(), verticesPerCuboid());
+    std::generate(m_multiStarts.begin(), m_multiStarts.end(), [this, &next]() {
+        auto current = next;
+        next += verticesPerCuboid();
+        return current;
+    });
 }
 
 void CuboidTriangles::resize(size_t count)
 {
-    center.resize(count);
-    extent.resize(count);
-    heightRange.resize(count);
-    colorValue.resize(count);
-    gradientIndex.resize(count);
+    m_vertex.resize(count * verticesPerCuboid());
+    m_normal.resize(count * verticesPerCuboid());
+    m_colorValue.resize(count * verticesPerCuboid());
+    m_gradientIndex.resize(count * verticesPerCuboid());
+
+    m_multiStarts.resize(count);
+    m_multiCounts.resize(count);
+
+    size_t next = 0;
+    std::fill(m_multiCounts.begin(), m_multiCounts.end(), verticesPerCuboid());
+    std::generate(m_multiStarts.begin(), m_multiStarts.end(), [this, &next]() {
+        auto current = next;
+        next += verticesPerCuboid();
+        return current;
+    });
 }
 
 void CuboidTriangles::render()
 {
     glBindVertexArray(m_vao);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    glDisable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDepthMask(GL_TRUE);
+
     // Pre-Z Pass
     //glDepthFunc(GL_LEQUAL);
     //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    //glUseProgram(m_depthOnlyProgram);
-    //glDrawArrays(GL_POINTS, 0, m_avc.size());
+    //glUseProgram(m_programs[1]);
+    //glMultiDrawArrays(GL_POINTS, m_multiStarts.data(), m_multiCounts.data(), size());
 
     // Color Pass
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glUseProgram(m_programs[0]);
-    glDrawArrays(GL_POINTS, 0, size());
+    glMultiDrawArrays(GL_TRIANGLES, m_multiStarts.data(), m_multiCounts.data(), size());
 
     glUseProgram(0);
 
