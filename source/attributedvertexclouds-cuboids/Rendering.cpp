@@ -218,8 +218,8 @@ void Rendering::spaceMeasurement()
     std::cout << std::endl;
 
     printSpaceMeasurement("Triangles", m_triangles.byteSize());
-    printSpaceMeasurement("Trianglestrip", m_triangleStrip.byteSize());
-    printSpaceMeasurement("Attributed Vertexcloud", m_avc.byteSize());
+    printSpaceMeasurement("Triangle Strip", m_triangleStrip.byteSize());
+    printSpaceMeasurement("Attributed Vertex Cloud", m_avc.byteSize());
 }
 
 void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const

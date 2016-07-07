@@ -84,7 +84,17 @@ int main(int /*argc*/, char ** /*argv*/)
         return 1;
     }
 
-    std::cout << " [F5]: Reload shaders." << std::endl;
+    std::cout << "Choose Techniques" << std::endl;
+    std::cout << " [1] Triangles" << std::endl;
+    std::cout << " [2] Triangle Strip" << std::endl;
+    std::cout << " [3] Attributed Vertex Cloud" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Measuring" << std::endl;
+    std::cout << " [m] Start/Stop Performance Measurements" << std::endl;
+    std::cout << " [M] Print Memory Measurements" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Debugging" << std::endl;
+    std::cout << " [F5]: Shader Reload" << std::endl;
 
     glfwSetErrorCallback(errorCallback);
 
