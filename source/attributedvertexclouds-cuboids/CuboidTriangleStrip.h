@@ -10,11 +10,11 @@
 #include "Cuboid.h"
 
 
-class CuboidTriangles
+class CuboidTriangleStrip
 {
 public:
-    CuboidTriangles();
-    ~CuboidTriangles();
+    CuboidTriangleStrip();
+    ~CuboidTriangleStrip();
 
     bool initialized() const;
     void initialize();
@@ -40,6 +40,9 @@ public:
     std::vector<glm::vec3> m_normal;
     std::vector<float> m_colorValue;
     std::vector<int> m_gradientIndex;
+
+    std::vector<gl::GLint> m_multiStarts;
+    std::vector<gl::GLint> m_multiCounts;
 
     gl::GLuint m_vertices;
     gl::GLuint m_vao;

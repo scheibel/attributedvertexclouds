@@ -32,7 +32,6 @@ public:
     size_t vertexByteSize() const;
     size_t componentCount() const;
 
-    void reserve(size_t count);
     void resize(size_t count);
 
     const std::vector<gl::GLuint> & programs() const;

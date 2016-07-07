@@ -248,14 +248,6 @@ size_t CuboidTriangles::componentCount() const
     return 8;
 }
 
-void CuboidTriangles::reserve(size_t count)
-{
-    m_vertex.reserve(count * verticesPerCuboid());
-    m_normal.reserve(count * verticesPerCuboid());
-    m_colorValue.reserve(count * verticesPerCuboid());
-    m_gradientIndex.reserve(count * verticesPerCuboid());
-}
-
 void CuboidTriangles::resize(size_t count)
 {
     m_vertex.resize(count * verticesPerCuboid());

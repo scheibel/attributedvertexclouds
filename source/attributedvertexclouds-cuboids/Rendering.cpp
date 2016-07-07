@@ -16,7 +16,7 @@ using namespace gl;
 
 
 Rendering::Rendering()
-: m_current(CuboidTechnique::VertexCloud)
+: m_current(CuboidTechnique::Triangles)
 , m_query(0)
 , m_measure(false)
 {
@@ -43,14 +43,19 @@ void Rendering::initialize()
 
 void Rendering::reloadShaders()
 {
-    if (m_avc.initialized())
-    {
-        m_avc.loadShader();
-    }
-
     if (m_triangles.initialized())
     {
         m_triangles.loadShader();
+    }
+
+    if (m_triangleStrip.initialized())
+    {
+        m_triangleStrip.loadShader();
+    }
+
+    if (m_avc.initialized())
+    {
+        m_avc.loadShader();
     }
 }
 
@@ -58,8 +63,9 @@ void Rendering::createGeometry()
 {
     static const size_t cuboidCount = 100000;
 
-    m_avc.resize(cuboidCount);
     m_triangles.resize(cuboidCount);
+    m_triangleStrip.resize(cuboidCount);
+    m_avc.resize(cuboidCount);
 
 #pragma omp parallel for
     for (size_t i = 0; i < cuboidCount; ++i)
@@ -70,8 +76,9 @@ void Rendering::createGeometry()
         c.colorValue = glm::linearRand(0.0f, 1.0f);
         c.gradientIndex = 0;
 
-        m_avc.setCube(i, c);
         m_triangles.setCube(i, c);
+        m_triangleStrip.setCube(i, c);
+        m_avc.setCube(i, c);
     }
 }
 
@@ -83,20 +90,20 @@ void Rendering::updateUniforms()
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
 
-    /*auto eyeRotation = glm::mat4(1.0f);
+    auto eyeRotation = glm::mat4(1.0f);
     eyeRotation = glm::rotate(eyeRotation, glm::sin(0.8342378f * f), glm::vec3(0.0f, 1.0f, 0.0f));
     eyeRotation = glm::rotate(eyeRotation, glm::cos(-0.5423543f * f), glm::vec3(1.0f, 0.0f, 0.0f));
-    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));*/
+    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    //const auto rotatedEye = eyeRotation * glm::vec4(eye, 1.0f);
-    const auto rotatedEye = glm::vec3(12.0f, 0.0f, 0.0f);
+    const auto rotatedEye = eyeRotation * glm::vec4(eye, 1.0f);
+    //const auto rotatedEye = glm::vec3(12.0f, 0.0f, 0.0f);
 
     const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
     const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;
 
-    if (m_avc.initialized())
+    if (m_triangles.initialized())
     {
-        for (GLuint program : m_avc.programs())
+        for (GLuint program : m_triangles.programs())
         {
             const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
             glUseProgram(program);
@@ -104,9 +111,19 @@ void Rendering::updateUniforms()
         }
     }
 
-    if (m_triangles.initialized())
+    if (m_triangleStrip.initialized())
     {
-        for (GLuint program : m_triangles.programs())
+        for (GLuint program : m_triangleStrip.programs())
+        {
+            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+            glUseProgram(program);
+            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+        }
+    }
+
+    if (m_avc.initialized())
+    {
+        for (GLuint program : m_avc.programs())
         {
             const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
             glUseProgram(program);
@@ -142,6 +159,12 @@ void Rendering::render()
             m_triangles.initialize();
         }
         break;
+    case CuboidTechnique::TriangleStrip:
+        if (!m_triangleStrip.initialized())
+        {
+            m_triangleStrip.initialize();
+        }
+        break;
     case CuboidTechnique::VertexCloud:
         if (!m_avc.initialized())
         {
@@ -159,6 +182,11 @@ void Rendering::render()
     case CuboidTechnique::Triangles:
         measureGPU("rendering", [this]() {
             m_triangles.render();
+        }, m_measure);
+        break;
+    case CuboidTechnique::TriangleStrip:
+        measureGPU("rendering", [this]() {
+            m_triangleStrip.render();
         }, m_measure);
         break;
     case CuboidTechnique::VertexCloud:

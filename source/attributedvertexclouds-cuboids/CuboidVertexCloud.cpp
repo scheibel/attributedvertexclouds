@@ -167,15 +167,6 @@ size_t CuboidVertexCloud::componentCount() const
     return 8;
 }
 
-void CuboidVertexCloud::reserve(size_t count)
-{
-    m_center.reserve(count);
-    m_extent.reserve(count);
-    m_heightRange.reserve(count);
-    m_colorValue.reserve(count);
-    m_gradientIndex.reserve(count);
-}
-
 void CuboidVertexCloud::resize(size_t count)
 {
     m_center.resize(count);
