@@ -15,6 +15,16 @@
 using namespace gl;
 
 
+namespace
+{
+
+
+static const size_t cuboidCount = 100000;
+
+
+} // namespace
+
+
 Rendering::Rendering()
 : m_current(CuboidTechnique::Triangles)
 , m_query(0)
@@ -61,8 +71,6 @@ void Rendering::reloadShaders()
 
 void Rendering::createGeometry()
 {
-    static const size_t cuboidCount = 100000;
-
     m_triangles.resize(cuboidCount);
     m_triangleStrip.resize(cuboidCount);
     m_avc.resize(cuboidCount);
@@ -197,6 +205,23 @@ void Rendering::render()
     }
 }
 
+void Rendering::spaceMeasurement()
+{
+    const auto reference = glm::min(m_triangles.byteSize(), glm::min(m_triangleStrip.byteSize(), m_avc.byteSize()));
+
+    const auto printSpaceMeasurement = [&reference](const std::string & techniqueName, size_t byteSize)
+    {
+        std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
+    };
+
+    std::cout << "Cuboid count: " << cuboidCount << std::endl;
+    std::cout << std::endl;
+
+    printSpaceMeasurement("Triangles", m_triangles.byteSize());
+    printSpaceMeasurement("Trianglestrip", m_triangleStrip.byteSize());
+    printSpaceMeasurement("Attributed Vertexcloud", m_avc.byteSize());
+}
+
 void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
@@ -238,7 +263,7 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << value << "ns" << std::endl;
 }
 
-void Rendering::toggleMeasurements()
+void Rendering::togglePerformanceMeasurements()
 {
     m_measure = !m_measure;
 }

@@ -31,7 +31,8 @@ public:
     void render();
 
     void setTechnique(int i);
-    void toggleMeasurements();
+    void togglePerformanceMeasurements();
+    void spaceMeasurement();
     void reloadShaders();
 
     void measureGPU(const std::string & name, std::function<void()> callback, bool on) const;
