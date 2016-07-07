@@ -220,7 +220,7 @@ void CuboidTriangles::setCube(size_t index, const Cuboid & cuboid)
 
 size_t CuboidTriangles::size() const
 {
-    return m_multiStarts.size();
+    return m_vertex.size() / verticesPerCuboid();
 }
 
 size_t CuboidTriangles::verticesPerCuboid() const
@@ -254,17 +254,6 @@ void CuboidTriangles::reserve(size_t count)
     m_normal.reserve(count * verticesPerCuboid());
     m_colorValue.reserve(count * verticesPerCuboid());
     m_gradientIndex.reserve(count * verticesPerCuboid());
-
-    m_multiStarts.resize(count);
-    m_multiCounts.resize(count);
-
-    size_t next = 0;
-    std::fill(m_multiCounts.begin(), m_multiCounts.end(), verticesPerCuboid());
-    std::generate(m_multiStarts.begin(), m_multiStarts.end(), [this, &next]() {
-        auto current = next;
-        next += verticesPerCuboid();
-        return current;
-    });
 }
 
 void CuboidTriangles::resize(size_t count)
@@ -273,17 +262,6 @@ void CuboidTriangles::resize(size_t count)
     m_normal.resize(count * verticesPerCuboid());
     m_colorValue.resize(count * verticesPerCuboid());
     m_gradientIndex.resize(count * verticesPerCuboid());
-
-    m_multiStarts.resize(count);
-    m_multiCounts.resize(count);
-
-    size_t next = 0;
-    std::fill(m_multiCounts.begin(), m_multiCounts.end(), verticesPerCuboid());
-    std::generate(m_multiStarts.begin(), m_multiStarts.end(), [this, &next]() {
-        auto current = next;
-        next += verticesPerCuboid();
-        return current;
-    });
 }
 
 void CuboidTriangles::render()
@@ -303,12 +281,14 @@ void CuboidTriangles::render()
     //glDepthFunc(GL_LEQUAL);
     //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     //glUseProgram(m_programs[1]);
-    //glMultiDrawArrays(GL_POINTS, m_multiStarts.data(), m_multiCounts.data(), size());
+    //glDrawArrays(GL_TRIANGLES, 0, verticesCount());
 
     // Color Pass
-    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glUseProgram(m_programs[0]);
-    glMultiDrawArrays(GL_TRIANGLES, m_multiStarts.data(), m_multiCounts.data(), size());
+    glDrawArrays(GL_TRIANGLES, 0, verticesCount());
+
+    glDepthMask(GL_TRUE);
 
     glUseProgram(0);
 

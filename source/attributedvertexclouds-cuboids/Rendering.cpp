@@ -56,7 +56,7 @@ void Rendering::reloadShaders()
 
 void Rendering::createGeometry()
 {
-    static const size_t cuboidCount = 10000;
+    static const size_t cuboidCount = 100000;
 
     m_avc.resize(cuboidCount);
     m_triangles.resize(cuboidCount);
@@ -83,12 +83,13 @@ void Rendering::updateUniforms()
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
 
-    auto eyeRotation = glm::mat4(1.0f);
+    /*auto eyeRotation = glm::mat4(1.0f);
     eyeRotation = glm::rotate(eyeRotation, glm::sin(0.8342378f * f), glm::vec3(0.0f, 1.0f, 0.0f));
     eyeRotation = glm::rotate(eyeRotation, glm::cos(-0.5423543f * f), glm::vec3(1.0f, 0.0f, 0.0f));
-    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));
+    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));*/
 
-    const auto rotatedEye = eyeRotation * glm::vec4(eye, 1.0f);
+    //const auto rotatedEye = eyeRotation * glm::vec4(eye, 1.0f);
+    const auto rotatedEye = glm::vec3(12.0f, 0.0f, 0.0f);
 
     const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
     const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;

@@ -42,9 +42,6 @@ public:
     std::vector<float> m_colorValue;
     std::vector<int> m_gradientIndex;
 
-    std::vector<gl::GLint> m_multiStarts;
-    std::vector<gl::GLsizei> m_multiCounts;
-
     gl::GLuint m_vertices;
     gl::GLuint m_vao;
 
