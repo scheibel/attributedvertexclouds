@@ -276,7 +276,8 @@ void CuboidTriangles::render()
     //glDrawArrays(GL_TRIANGLES, 0, verticesCount());
 
     // Color Pass
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glDepthMask(GL_FALSE);
     glUseProgram(m_programs[0]);
     glDrawArrays(GL_TRIANGLES, 0, verticesCount());
 

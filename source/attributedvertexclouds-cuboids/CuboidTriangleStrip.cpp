@@ -245,7 +245,8 @@ void CuboidTriangleStrip::render()
     //glDrawArrays(GL_TRIANGLES, 0, verticesCount());
 
     // Color Pass
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glDepthMask(GL_FALSE);
     glUseProgram(m_programs[0]);
     glMultiDrawArrays(GL_TRIANGLE_STRIP, m_multiStarts.data(), m_multiCounts.data(), size());
 

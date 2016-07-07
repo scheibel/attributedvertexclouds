@@ -38,12 +38,16 @@ void CuboidVertexCloud::initialize()
     m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    m_programs.resize(1);
+    m_programs.resize(2);
     m_programs[0] = glCreateProgram();
+    m_programs[1] = glCreateProgram();
 
     glAttachShader(m_programs[0], m_vertexShader);
     glAttachShader(m_programs[0], m_geometryShader);
     glAttachShader(m_programs[0], m_fragmentShader);
+
+    glAttachShader(m_programs[1], m_vertexShader);
+    glAttachShader(m_programs[1], m_geometryShader);
 
     loadShader();
 }
@@ -118,6 +122,10 @@ bool CuboidVertexCloud::loadShader()
 
     success &= checkForLinkerError(m_programs[0], "program");
 
+    glLinkProgram(m_programs[1]);
+
+    success &= checkForLinkerError(m_programs[1], "depth only program");
+
     if (!success)
     {
         return false;
@@ -189,6 +197,16 @@ void CuboidVertexCloud::render()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_TRUE);
 
+    // Pre-Z Pass
+    //glDepthFunc(GL_LEQUAL);
+    //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    //glUseProgram(m_programs[1]);
+    //glDrawArrays(GL_POINTS, 0, size());
+
+    // Color Pass
+
+    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    //glDepthMask(GL_FALSE);
     glUseProgram(m_programs[0]);
     glDrawArrays(GL_POINTS, 0, size());
 
