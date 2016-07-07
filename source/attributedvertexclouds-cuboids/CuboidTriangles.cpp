@@ -1,5 +1,5 @@
 
-#include "CuboidVertexCloud.h"
+#include "CuboidTriangles.h"
 
 #include <glbinding/gl/gl.h>
 
@@ -7,7 +7,7 @@
 
 using namespace gl;
 
-CuboidVertexCloud::CuboidVertexCloud()
+CuboidTriangles::CuboidTriangles()
 : m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
@@ -16,18 +16,18 @@ CuboidVertexCloud::CuboidVertexCloud()
 {
 }
 
-CuboidVertexCloud::~CuboidVertexCloud()
+CuboidTriangles::~CuboidTriangles()
 {
     glDeleteBuffers(1, &m_vertices);
     glDeleteVertexArrays(1, &m_vao);
 }
 
-bool CuboidVertexCloud::initialized() const
+bool CuboidTriangles::initialized() const
 {
     return m_vertices > 0;
 }
 
-void CuboidVertexCloud::initialize()
+void CuboidTriangles::initialize()
 {
     glGenBuffers(1, &m_vertices);
     glGenVertexArrays(1, &m_vao);
@@ -52,7 +52,7 @@ void CuboidVertexCloud::initialize()
     loadShader();
 }
 
-void CuboidVertexCloud::initializeVAO()
+void CuboidTriangles::initializeVAO()
 {
     glBindVertexArray(m_vao);
 
@@ -81,7 +81,7 @@ void CuboidVertexCloud::initializeVAO()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-bool CuboidVertexCloud::loadShader()
+bool CuboidTriangles::loadShader()
 {
     const auto vertexShaderSource = textFromFile("data/shaders/cuboids-avc/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
@@ -136,7 +136,7 @@ bool CuboidVertexCloud::loadShader()
     return true;
 }
 
-void CuboidVertexCloud::setCube(size_t index, const Cuboid & cuboid)
+void CuboidTriangles::setCube(size_t index, const Cuboid & cuboid)
 {
     center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
     extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
@@ -145,7 +145,7 @@ void CuboidVertexCloud::setCube(size_t index, const Cuboid & cuboid)
     gradientIndex[index] = cuboid.gradientIndex;
 }
 
-void CuboidVertexCloud::setCube(size_t index, Cuboid && cuboid)
+void CuboidTriangles::setCube(size_t index, Cuboid && cuboid)
 {
     center[index] = glm::vec2(cuboid.center.x, cuboid.center.z);
     extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
@@ -154,27 +154,27 @@ void CuboidVertexCloud::setCube(size_t index, Cuboid && cuboid)
     gradientIndex[index] = cuboid.gradientIndex;
 }
 
-size_t CuboidVertexCloud::size() const
+size_t CuboidTriangles::size() const
 {
     return center.size();
 }
 
-size_t CuboidVertexCloud::byteSize() const
+size_t CuboidTriangles::byteSize() const
 {
     return size() * vertexByteSize();
 }
 
-size_t CuboidVertexCloud::vertexByteSize() const
+size_t CuboidTriangles::vertexByteSize() const
 {
     return sizeof(float) * componentCount();
 }
 
-size_t CuboidVertexCloud::componentCount() const
+size_t CuboidTriangles::componentCount() const
 {
     return 8;
 }
 
-void CuboidVertexCloud::reserve(size_t count)
+void CuboidTriangles::reserve(size_t count)
 {
     center.reserve(count);
     extent.reserve(count);
@@ -183,7 +183,7 @@ void CuboidVertexCloud::reserve(size_t count)
     gradientIndex.reserve(count);
 }
 
-void CuboidVertexCloud::resize(size_t count)
+void CuboidTriangles::resize(size_t count)
 {
     center.resize(count);
     extent.resize(count);
@@ -192,7 +192,7 @@ void CuboidVertexCloud::resize(size_t count)
     gradientIndex.resize(count);
 }
 
-void CuboidVertexCloud::render()
+void CuboidTriangles::render()
 {
     glBindVertexArray(m_vao);
 
@@ -212,7 +212,7 @@ void CuboidVertexCloud::render()
     glBindVertexArray(0);
 }
 
-const std::vector<gl::GLuint> & CuboidVertexCloud::programs() const
+const std::vector<gl::GLuint> & CuboidTriangles::programs() const
 {
     return m_programs;
 }

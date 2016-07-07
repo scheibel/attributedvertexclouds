@@ -4,6 +4,7 @@
 #include <glbinding/gl/types.h>
 
 #include "CuboidVertexCloud.h"
+#include "CuboidTriangles.h"
 
 
 // For more information on how to write C++ please adhere to: 
@@ -38,6 +39,7 @@ public:
 protected:
     CuboidTechnique m_current;
     CuboidVertexCloud m_avc;
+    CuboidTriangles m_triangles;
 
     gl::GLuint m_query;
 

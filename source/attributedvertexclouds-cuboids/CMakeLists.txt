@@ -41,8 +41,8 @@ set(sources
     Cuboid.h
     Cuboid.cpp
     
-#    CuboidTriangles.h
-#    CuboidTriangles.cpp
+    CuboidTriangles.h
+    CuboidTriangles.cpp
 #    CuboidTriangleStrip.h
 #    CuboidTriangleStrip.cpp
     CuboidVertexCloud.h

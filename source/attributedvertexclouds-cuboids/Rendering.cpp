@@ -47,6 +47,11 @@ void Rendering::reloadShaders()
     {
         m_avc.loadShader();
     }
+
+    if (m_triangles.initialized())
+    {
+        m_triangles.loadShader();
+    }
 }
 
 void Rendering::createGeometry()
@@ -54,6 +59,7 @@ void Rendering::createGeometry()
     static const size_t cuboidCount = 10000;
 
     m_avc.resize(cuboidCount);
+    m_triangles.resize(cuboidCount);
 
 #pragma omp parallel for
     for (size_t i = 0; i < cuboidCount; ++i)
@@ -64,7 +70,8 @@ void Rendering::createGeometry()
         c.colorValue = glm::linearRand(0.0f, 1.0f);
         c.gradientIndex = 0;
 
-        m_avc.setCube(i, std::move(c));
+        m_avc.setCube(i, c);
+        m_triangles.setCube(i, c);
     }
 }
 
@@ -86,11 +93,24 @@ void Rendering::updateUniforms()
     const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
     const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;
 
-    for (GLuint program : m_avc.programs())
+    if (m_avc.initialized())
     {
-        const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-        glUseProgram(program);
-        glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+        for (GLuint program : m_avc.programs())
+        {
+            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+            glUseProgram(program);
+            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+        }
+    }
+
+    if (m_triangles.initialized())
+    {
+        for (GLuint program : m_triangles.programs())
+        {
+            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+            glUseProgram(program);
+            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+        }
     }
 
     glUseProgram(0);
@@ -113,18 +133,39 @@ void Rendering::render()
 
     glViewport(0, 0, m_width, m_height);
 
-    if (!m_avc.initialized())
+    switch (m_current)
     {
-        m_avc.initialize();
+    case CuboidTechnique::Triangles:
+        if (!m_triangles.initialized())
+        {
+            m_triangles.initialize();
+        }
+        break;
+    case CuboidTechnique::VertexCloud:
+        if (!m_avc.initialized())
+        {
+            m_avc.initialize();
+        }
+        break;
     }
 
     updateUniforms();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    measureGPU("rendering", [this]() {
-        m_avc.render();
-    }, m_measure);
+    switch (m_current)
+    {
+    case CuboidTechnique::Triangles:
+        measureGPU("rendering", [this]() {
+            m_triangles.render();
+        }, m_measure);
+        break;
+    case CuboidTechnique::VertexCloud:
+        measureGPU("rendering", [this]() {
+            m_avc.render();
+        }, m_measure);
+        break;
+    }
 }
 
 void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
