@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 
+#include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <glbinding/gl/gl.h>
@@ -16,6 +17,7 @@ using namespace gl;
 
 Rendering::Rendering()
 : m_query(0)
+, m_measure(false)
 {
 }
 
@@ -33,6 +35,7 @@ void Rendering::initialize()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
 
     createGeometry();
 
@@ -46,7 +49,6 @@ void Rendering::initialize()
     m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
     m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    m_depthOnlyFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
     m_program = glCreateProgram();
     m_depthOnlyProgram = glCreateProgram();
@@ -57,20 +59,28 @@ void Rendering::initialize()
 
     glAttachShader(m_depthOnlyProgram, m_vertexShader);
     glAttachShader(m_depthOnlyProgram, m_geometryShader);
-    glAttachShader(m_depthOnlyProgram, m_depthOnlyFragmentShader);
 
     loadShader();
+
+    m_start = std::chrono::high_resolution_clock::now();
 }
 
 void Rendering::createGeometry()
 {
-    m_avc.resize(1);
+    static const size_t cuboidCount = 10000;
 
-    m_avc.center.front() = glm::vec2(0.0f, 0.0f);
-    m_avc.extent.front() = glm::vec2(1.0f, 1.0f);
-    m_avc.heightRange.front() = glm::vec2(0.0f, 0.04f);
-    m_avc.colorValue.front() = 0.5f;
-    m_avc.gradientIndex.front() = 0;
+    m_avc.resize(cuboidCount);
+
+#pragma omp parallel for
+    for (size_t i = 0; i < cuboidCount; ++i)
+    {
+        m_avc.center[i] = glm::vec2(glm::linearRand(-8.0f, 8.0f), glm::linearRand(-8.0f, 8.0f));
+        m_avc.extent[i] = glm::vec2(glm::linearRand(0.1f, 0.4f), glm::linearRand(0.1f, 0.4f));
+        m_avc.heightRange[i] = glm::vec2(glm::linearRand(-0.5f, 0.5f));
+        m_avc.heightRange[i].y += glm::linearRand(0.1f, 0.4f);
+        m_avc.colorValue[i] = glm::linearRand(0.0f, 1.0f);
+        m_avc.gradientIndex[i] = 0;
+    }
 }
 
 void Rendering::initializeVAO()
@@ -134,16 +144,6 @@ bool Rendering::loadShader()
     success &= checkForCompilationError(m_fragmentShader, "fragment shader");
 
 
-    const auto depthOnlyFragmentShaderSource = textFromFile("data/shaders/depthonly.frag");
-    const auto depthOnlyFragmentShaderSource_ptr = depthOnlyFragmentShaderSource.c_str();
-    if(depthOnlyFragmentShaderSource_ptr)
-        glShaderSource(m_depthOnlyFragmentShader, 1, &depthOnlyFragmentShaderSource_ptr, 0);
-
-    glCompileShader(m_depthOnlyFragmentShader);
-
-    success &= checkForCompilationError(m_depthOnlyFragmentShader, "depth only fragment shader");
-
-
     if (!success)
     {
         return false;
@@ -169,12 +169,21 @@ bool Rendering::loadShader()
 
 void Rendering::updateUniforms()
 {
-    static const auto eye = glm::vec3(2.0f, 2.0f, 2.0f);
+    static const auto eye = glm::vec3(1.0f, 12.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
     static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
-    static const auto view = glm::lookAt(eye, center, up);
 
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.1f, 30.0f) * view;
+    const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
+
+    auto eyeRotation = glm::mat4(1.0f);
+    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.8342378f * f), glm::vec3(0.0f, 1.0f, 0.0f));
+    eyeRotation = glm::rotate(eyeRotation, glm::cos(-0.5423543f * f), glm::vec3(1.0f, 0.0f, 0.0f));
+    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    const auto rotatedEye = eyeRotation * glm::vec4(eye, 1.0f);
+
+    const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;
 
 
     const auto viewProjectionLocation = glGetUniformLocation(m_program, "viewProjection");
@@ -205,12 +214,22 @@ void Rendering::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindVertexArray(m_vao);
-    glUseProgram(m_program);
 
-    glDrawArrays(GL_POINTS, 0, m_avc.size());
+    measure([this]() {
+        // Pre-Z Pass
+        //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        //glUseProgram(m_depthOnlyProgram);
+        //glDrawArrays(GL_POINTS, 0, m_avc.size());
+
+        // Color Pass
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glUseProgram(m_program);
+        glDrawArrays(GL_POINTS, 0, m_avc.size());
+    }, m_measure);
+
+    glUseProgram(0);
 
     glBindVertexArray(0);
-    glUseProgram(0);
 }
 
 void Rendering::measure(std::function<void()> callback, bool on) const
@@ -244,4 +263,9 @@ void Rendering::measure(std::function<void()> callback, bool on) const
 
     std::cout << "CPU measured: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns" << std::endl;
     std::cout << "GPU measured: " << value << "ns" << std::endl;
+}
+
+void Rendering::toggleMeasurements()
+{
+    m_measure = !m_measure;
 }

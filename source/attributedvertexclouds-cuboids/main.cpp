@@ -45,6 +45,11 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         std::cout << "Reload shaders" << std::endl;
         exercise.loadShader();
     }
+
+    if (key == GLFW_KEY_M && action == GLFW_RELEASE)
+    {
+        exercise.toggleMeasurements();
+    }
 }
 
 
