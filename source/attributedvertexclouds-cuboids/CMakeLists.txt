@@ -41,6 +41,8 @@ set(sources
     Cuboid.h
     Cuboid.cpp
     
+    CuboidInstancing.h
+    CuboidInstancing.cpp
     CuboidTriangles.h
     CuboidTriangles.cpp
     CuboidTriangleStrip.h

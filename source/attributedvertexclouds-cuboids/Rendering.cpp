@@ -53,6 +53,11 @@ void Rendering::reloadShaders()
         m_triangleStrip.loadShader();
     }
 
+    if (m_instancing.initialized())
+    {
+        m_instancing.loadShader();
+    }
+
     if (m_avc.initialized())
     {
         m_avc.loadShader();
@@ -65,6 +70,7 @@ void Rendering::createGeometry()
 
     m_triangles.resize(cuboidCount);
     m_triangleStrip.resize(cuboidCount);
+    m_instancing.resize(cuboidCount);
     m_avc.resize(cuboidCount);
 
 #pragma omp parallel for
@@ -78,6 +84,7 @@ void Rendering::createGeometry()
 
         m_triangles.setCube(i, c);
         m_triangleStrip.setCube(i, c);
+        m_instancing.setCube(i, c);
         m_avc.setCube(i, c);
     }
 }
@@ -114,6 +121,16 @@ void Rendering::updateUniforms()
     if (m_triangleStrip.initialized())
     {
         for (GLuint program : m_triangleStrip.programs())
+        {
+            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+            glUseProgram(program);
+            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+        }
+    }
+
+    if (m_instancing.initialized())
+    {
+        for (GLuint program : m_instancing.programs())
         {
             const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
             glUseProgram(program);
@@ -165,6 +182,12 @@ void Rendering::render()
             m_triangleStrip.initialize();
         }
         break;
+    case CuboidTechnique::Instancing:
+        if (!m_instancing.initialized())
+        {
+            m_instancing.initialize();
+        }
+        break;
     case CuboidTechnique::VertexCloud:
         if (!m_avc.initialized())
         {
@@ -187,6 +210,11 @@ void Rendering::render()
     case CuboidTechnique::TriangleStrip:
         measureGPU("rendering", [this]() {
             m_triangleStrip.render();
+        }, m_measure);
+        break;
+    case CuboidTechnique::Instancing:
+        measureGPU("rendering", [this]() {
+            m_instancing.render();
         }, m_measure);
         break;
     case CuboidTechnique::VertexCloud:

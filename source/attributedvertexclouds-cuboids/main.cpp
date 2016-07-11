@@ -51,7 +51,7 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         rendering.toggleMeasurements();
     }
 
-    if (key >= GLFW_KEY_1 && key <= GLFW_KEY_3 && action == GLFW_RELEASE)
+    if (key >= GLFW_KEY_1 && key <= GLFW_KEY_4 && action == GLFW_RELEASE)
     {
         rendering.setTechnique(key - GLFW_KEY_1);
     }

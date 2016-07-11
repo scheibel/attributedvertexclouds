@@ -6,6 +6,7 @@
 #include "CuboidVertexCloud.h"
 #include "CuboidTriangles.h"
 #include "CuboidTriangleStrip.h"
+#include "CuboidInstancing.h"
 
 
 // For more information on how to write C++ please adhere to: 
@@ -15,6 +16,7 @@ enum class CuboidTechnique
 {
     Triangles,
     TriangleStrip,
+    Instancing,
     VertexCloud
 };
 
@@ -40,6 +42,7 @@ public:
 protected:
     CuboidTechnique m_current;
     CuboidTriangles m_triangles;
+    CuboidInstancing m_instancing;
     CuboidTriangleStrip m_triangleStrip;
     CuboidVertexCloud m_avc;
 
