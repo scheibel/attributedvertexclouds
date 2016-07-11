@@ -235,7 +235,7 @@ void Rendering::render()
 
 void Rendering::spaceMeasurement()
 {
-    const auto reference = glm::min(m_triangles.byteSize(), glm::min(m_triangleStrip.byteSize(), m_avc.byteSize()));
+    const auto reference = glm::min(std::min(m_triangles.byteSize(), m_triangleStrip.byteSize()), glm::min(m_instancing.byteSize(), m_avc.byteSize()));
 
     const auto printSpaceMeasurement = [&reference](const std::string & techniqueName, size_t byteSize)
     {
@@ -247,6 +247,7 @@ void Rendering::spaceMeasurement()
 
     printSpaceMeasurement("Triangles", m_triangles.byteSize());
     printSpaceMeasurement("Triangle Strip", m_triangleStrip.byteSize());
+    printSpaceMeasurement("Instancing", m_instancing.byteSize());
     printSpaceMeasurement("Attributed Vertex Cloud", m_avc.byteSize());
 }
 

@@ -87,7 +87,8 @@ int main(int /*argc*/, char ** /*argv*/)
     std::cout << "Choose Techniques" << std::endl;
     std::cout << " [1] Triangles" << std::endl;
     std::cout << " [2] Triangle Strip" << std::endl;
-    std::cout << " [3] Attributed Vertex Cloud" << std::endl;
+    std::cout << " [3] Instancing" << std::endl;
+    std::cout << " [4] Attributed Vertex Cloud" << std::endl;
     std::cout << std::endl;
     std::cout << "Measuring" << std::endl;
     std::cout << " [m] Start/Stop Performance Measurements" << std::endl;
