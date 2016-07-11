@@ -8,33 +8,33 @@
 #include <glbinding/gl/types.h>
 
 #include "Cuboid.h"
+#include "CuboidImplementation.h"
 
 
-class CuboidTriangles
+class CuboidTriangles : public CuboidImplementation
 {
 public:
     CuboidTriangles();
     ~CuboidTriangles();
 
-    bool initialized() const;
-    void initialize();
+    virtual void onInitialize() override;
+    virtual void onRender() override;
 
-    void render();
+    virtual bool loadShader() override;
 
-    bool loadShader();
+    virtual void setCube(size_t index, const Cuboid & cuboid) override;
 
-    void setCube(size_t index, const Cuboid & cuboid);
+    virtual size_t size() const;
+    virtual size_t verticesPerCuboid() const;
+    virtual size_t verticesCount() const;
+    virtual size_t staticByteSize() const;
+    virtual size_t byteSize() const;
+    virtual size_t vertexByteSize() const;
+    virtual size_t componentCount() const;
 
-    size_t size() const;
-    size_t verticesPerCuboid() const;
-    size_t verticesCount() const;
-    size_t byteSize() const;
-    size_t vertexByteSize() const;
-    size_t componentCount() const;
+    virtual void resize(size_t count);
 
-    void resize(size_t count);
-
-    const std::vector<gl::GLuint> & programs() const;
+    virtual const std::vector<gl::GLuint> & programs() const;
 public:
     std::vector<glm::vec3> m_vertex;
     std::vector<glm::vec3> m_normal;

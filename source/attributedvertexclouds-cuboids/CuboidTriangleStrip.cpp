@@ -23,12 +23,7 @@ CuboidTriangleStrip::~CuboidTriangleStrip()
     glDeleteVertexArrays(1, &m_vao);
 }
 
-bool CuboidTriangleStrip::initialized() const
-{
-    return m_vertices > 0;
-}
-
-void CuboidTriangleStrip::initialize()
+void CuboidTriangleStrip::onInitialize()
 {
     glGenBuffers(1, &m_vertices);
     glGenVertexArrays(1, &m_vao);
@@ -191,6 +186,11 @@ size_t CuboidTriangleStrip::verticesCount() const
     return size() * verticesPerCuboid();
 }
 
+size_t CuboidTriangleStrip::staticByteSize() const
+{
+    return 0;
+}
+
 size_t CuboidTriangleStrip::byteSize() const
 {
     return verticesCount() * vertexByteSize();
@@ -225,7 +225,7 @@ void CuboidTriangleStrip::resize(size_t count)
     });
 }
 
-void CuboidTriangleStrip::render()
+void CuboidTriangleStrip::onRender()
 {
     glBindVertexArray(m_vao);
 

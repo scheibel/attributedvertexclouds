@@ -26,6 +26,8 @@ void CuboidImplementation::initialize()
     if (!initialized())
     {
         onInitialize();
+
+        m_initialized = true;
     }
 }
 
@@ -34,4 +36,9 @@ void CuboidImplementation::render()
     initialize();
 
     onRender();
+}
+
+size_t CuboidImplementation::fullByteSize() const
+{
+    return byteSize() + staticByteSize();
 }

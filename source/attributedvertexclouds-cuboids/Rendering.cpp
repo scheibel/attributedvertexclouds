@@ -19,7 +19,7 @@ namespace
 {
 
 
-static const size_t cuboidCount = 100000;
+static const size_t cuboidCount = 50000;
 
 
 } // namespace
@@ -179,28 +179,16 @@ void Rendering::render()
     switch (m_current)
     {
     case CuboidTechnique::Triangles:
-        if (!m_triangles.initialized())
-        {
-            m_triangles.initialize();
-        }
+        m_triangles.initialize();
         break;
     case CuboidTechnique::TriangleStrip:
-        if (!m_triangleStrip.initialized())
-        {
-            m_triangleStrip.initialize();
-        }
+        m_triangleStrip.initialize();
         break;
     case CuboidTechnique::Instancing:
-        if (!m_instancing.initialized())
-        {
-            m_instancing.initialize();
-        }
+        m_instancing.initialize();
         break;
     case CuboidTechnique::VertexCloud:
-        if (!m_avc.initialized())
-        {
-            m_avc.initialize();
-        }
+        m_avc.initialize();
         break;
     }
 
@@ -235,7 +223,7 @@ void Rendering::render()
 
 void Rendering::spaceMeasurement()
 {
-    const auto reference = glm::min(std::min(m_triangles.byteSize(), m_triangleStrip.byteSize()), glm::min(m_instancing.byteSize(), m_avc.byteSize()));
+    const auto reference = glm::min(std::min(m_triangles.fullByteSize(), m_triangleStrip.fullByteSize()), glm::min(m_instancing.fullByteSize(), m_avc.fullByteSize()));
 
     const auto printSpaceMeasurement = [&reference](const std::string & techniqueName, size_t byteSize)
     {
@@ -245,10 +233,10 @@ void Rendering::spaceMeasurement()
     std::cout << "Cuboid count: " << cuboidCount << std::endl;
     std::cout << std::endl;
 
-    printSpaceMeasurement("Triangles", m_triangles.byteSize());
-    printSpaceMeasurement("Triangle Strip", m_triangleStrip.byteSize());
-    printSpaceMeasurement("Instancing", m_instancing.byteSize());
-    printSpaceMeasurement("Attributed Vertex Cloud", m_avc.byteSize());
+    printSpaceMeasurement("Triangles", m_triangles.fullByteSize());
+    printSpaceMeasurement("Triangle Strip", m_triangleStrip.fullByteSize());
+    printSpaceMeasurement("Instancing", m_instancing.fullByteSize());
+    printSpaceMeasurement("Attributed Vertex Cloud", m_avc.fullByteSize());
 }
 
 void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const

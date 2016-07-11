@@ -19,6 +19,8 @@ public:
     void initialize();
     void render();
 
+    size_t fullByteSize() const;
+
     virtual void onInitialize() = 0;
     virtual void onRender() = 0;
 
@@ -29,6 +31,7 @@ public:
     virtual size_t size() const = 0;
     virtual size_t verticesPerCuboid() const = 0;
     virtual size_t verticesCount() const = 0;
+    virtual size_t staticByteSize() const = 0;
     virtual size_t byteSize() const = 0;
     virtual size_t vertexByteSize() const = 0;
     virtual size_t componentCount() const = 0;

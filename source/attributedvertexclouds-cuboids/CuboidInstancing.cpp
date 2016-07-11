@@ -24,12 +24,7 @@ CuboidInstancing::~CuboidInstancing()
     glDeleteVertexArrays(1, &m_vao);
 }
 
-bool CuboidInstancing::initialized() const
-{
-    return m_vertices > 0;
-}
-
-void CuboidInstancing::initialize()
+void CuboidInstancing::onInitialize()
 {
     glGenBuffers(1, &m_vertices);
     glGenBuffers(1, &m_attributes);
@@ -199,6 +194,11 @@ size_t CuboidInstancing::verticesCount() const
     return size() * verticesPerCuboid();
 }
 
+size_t CuboidInstancing::staticByteSize() const
+{
+    return sizeof(glm::vec3) * 14 * 2;
+}
+
 size_t CuboidInstancing::byteSize() const
 {
     return verticesCount() * vertexByteSize();
@@ -222,7 +222,7 @@ void CuboidInstancing::resize(size_t count)
     m_gradientIndex.resize(count * verticesPerCuboid());
 }
 
-void CuboidInstancing::render()
+void CuboidInstancing::onRender()
 {
     glBindVertexArray(m_vao);
 
