@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,6 +11,11 @@
 #include <glbinding/gl/gl.h>
 
 #include "common.h"
+
+#include "CuboidVertexCloud.h"
+#include "CuboidTriangles.h"
+#include "CuboidTriangleStrip.h"
+#include "CuboidInstancing.h"
 
 
 using namespace gl;
@@ -26,10 +32,16 @@ static const size_t cuboidCount = 50000;
 
 
 Rendering::Rendering()
-: m_current(CuboidTechnique::Triangles)
+: m_current(nullptr)
 , m_query(0)
 , m_measure(false)
 {
+    m_implementations[0] = new CuboidTriangles;
+    m_implementations[1] = new CuboidTriangleStrip;
+    m_implementations[2] = new CuboidInstancing;
+    m_implementations[3] = new CuboidVertexCloud;
+
+    setTechnique(0);
 }
 
 Rendering::~Rendering()
@@ -53,33 +65,21 @@ void Rendering::initialize()
 
 void Rendering::reloadShaders()
 {
-    if (m_triangles.initialized())
+    for (auto implementation : m_implementations)
     {
-        m_triangles.loadShader();
-    }
-
-    if (m_triangleStrip.initialized())
-    {
-        m_triangleStrip.loadShader();
-    }
-
-    if (m_instancing.initialized())
-    {
-        m_instancing.loadShader();
-    }
-
-    if (m_avc.initialized())
-    {
-        m_avc.loadShader();
+        if (implementation->initialized())
+        {
+            implementation->loadShader();
+        }
     }
 }
 
 void Rendering::createGeometry()
 {
-    m_triangles.resize(cuboidCount);
-    m_triangleStrip.resize(cuboidCount);
-    m_instancing.resize(cuboidCount);
-    m_avc.resize(cuboidCount);
+    for (auto implementation : m_implementations)
+    {
+        implementation->resize(cuboidCount);
+    }
 
 #pragma omp parallel for
     for (size_t i = 0; i < cuboidCount; ++i)
@@ -90,10 +90,10 @@ void Rendering::createGeometry()
         c.colorValue = glm::linearRand(0.0f, 1.0f);
         c.gradientIndex = 0;
 
-        m_triangles.setCube(i, c);
-        m_triangleStrip.setCube(i, c);
-        m_instancing.setCube(i, c);
-        m_avc.setCube(i, c);
+        for (auto implementation : m_implementations)
+        {
+            implementation->setCube(i, c);
+        }
     }
 }
 
@@ -116,43 +116,16 @@ void Rendering::updateUniforms()
     const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
     const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;
 
-    if (m_triangles.initialized())
+    for (auto implementation : m_implementations)
     {
-        for (GLuint program : m_triangles.programs())
+        if (implementation->initialized())
         {
-            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-            glUseProgram(program);
-            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
-        }
-    }
-
-    if (m_triangleStrip.initialized())
-    {
-        for (GLuint program : m_triangleStrip.programs())
-        {
-            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-            glUseProgram(program);
-            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
-        }
-    }
-
-    if (m_instancing.initialized())
-    {
-        for (GLuint program : m_instancing.programs())
-        {
-            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-            glUseProgram(program);
-            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
-        }
-    }
-
-    if (m_avc.initialized())
-    {
-        for (GLuint program : m_avc.programs())
-        {
-            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-            glUseProgram(program);
-            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+            for (GLuint program : implementation->programs())
+            {
+                const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+                glUseProgram(program);
+                glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+            }
         }
     }
 
@@ -167,7 +140,7 @@ void Rendering::resize(int w, int h)
 
 void Rendering::setTechnique(int i)
 {
-    m_current = static_cast<CuboidTechnique>(i);
+    m_current = m_implementations.at(i);
 }
 
 void Rendering::render()
@@ -176,54 +149,25 @@ void Rendering::render()
 
     glViewport(0, 0, m_width, m_height);
 
-    switch (m_current)
-    {
-    case CuboidTechnique::Triangles:
-        m_triangles.initialize();
-        break;
-    case CuboidTechnique::TriangleStrip:
-        m_triangleStrip.initialize();
-        break;
-    case CuboidTechnique::Instancing:
-        m_instancing.initialize();
-        break;
-    case CuboidTechnique::VertexCloud:
-        m_avc.initialize();
-        break;
-    }
+    m_current->initialize();
 
     updateUniforms();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    switch (m_current)
-    {
-    case CuboidTechnique::Triangles:
-        measureGPU("rendering", [this]() {
-            m_triangles.render();
-        }, m_measure);
-        break;
-    case CuboidTechnique::TriangleStrip:
-        measureGPU("rendering", [this]() {
-            m_triangleStrip.render();
-        }, m_measure);
-        break;
-    case CuboidTechnique::Instancing:
-        measureGPU("rendering", [this]() {
-            m_instancing.render();
-        }, m_measure);
-        break;
-    case CuboidTechnique::VertexCloud:
-        measureGPU("rendering", [this]() {
-            m_avc.render();
-        }, m_measure);
-        break;
-    }
+    measureGPU("rendering", [this]() {
+        m_current->render();
+    }, m_measure);
 }
 
 void Rendering::spaceMeasurement()
 {
-    const auto reference = glm::min(std::min(m_triangles.fullByteSize(), m_triangleStrip.fullByteSize()), glm::min(m_instancing.fullByteSize(), m_avc.fullByteSize()));
+    const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
+            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const CuboidImplementation * technique) {
+                return std::max(currentSize, technique->fullByteSize());
+            }), [](size_t currentSize, const CuboidImplementation * technique) {
+        return std::min(currentSize, technique->fullByteSize());
+    });
 
     const auto printSpaceMeasurement = [&reference](const std::string & techniqueName, size_t byteSize)
     {
@@ -233,10 +177,10 @@ void Rendering::spaceMeasurement()
     std::cout << "Cuboid count: " << cuboidCount << std::endl;
     std::cout << std::endl;
 
-    printSpaceMeasurement("Triangles", m_triangles.fullByteSize());
-    printSpaceMeasurement("Triangle Strip", m_triangleStrip.fullByteSize());
-    printSpaceMeasurement("Instancing", m_instancing.fullByteSize());
-    printSpaceMeasurement("Attributed Vertex Cloud", m_avc.fullByteSize());
+    for (const auto implementation : m_implementations)
+    {
+        printSpaceMeasurement(implementation->name(), implementation->fullByteSize());
+    }
 }
 
 void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const

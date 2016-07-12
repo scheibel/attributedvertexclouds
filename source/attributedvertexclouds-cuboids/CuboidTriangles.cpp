@@ -10,7 +10,8 @@
 using namespace gl;
 
 CuboidTriangles::CuboidTriangles()
-: m_vertices(0)
+: CuboidImplementation("Triangles")
+, m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
 , m_fragmentShader(0)
@@ -205,7 +206,7 @@ void CuboidTriangles::setCube(size_t index, const Cuboid & cuboid)
     m_vertex[verticesPerCuboid() * index + 28] = vertices[3];
     m_vertex[verticesPerCuboid() * index + 29] = vertices[2];
 
-    for (int i = 0; i < verticesPerCuboid(); ++i)
+    for (auto i = 0ull; i < verticesPerCuboid(); ++i)
     {
         m_vertex[verticesPerCuboid() * index + i] = cuboid.center + cuboid.extent * m_vertex[verticesPerCuboid() * index + i];
         m_colorValue[verticesPerCuboid() * index + i] = cuboid.colorValue;

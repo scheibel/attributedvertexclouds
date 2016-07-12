@@ -11,8 +11,10 @@
 class CuboidImplementation
 {
 public:
-    CuboidImplementation();
+    CuboidImplementation(const std::string & name);
     virtual ~CuboidImplementation();
+
+    const std::string & name() const;
 
     bool initialized() const;
 
@@ -20,6 +22,8 @@ public:
     void render();
 
     size_t fullByteSize() const;
+
+    // Subclass interface
 
     virtual void onInitialize() = 0;
     virtual void onRender() = 0;
@@ -40,5 +44,6 @@ public:
 
     virtual const std::vector<gl::GLuint> & programs() const = 0;
 public:
+    std::string m_name;
     bool m_initialized;
 };

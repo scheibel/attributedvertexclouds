@@ -10,7 +10,8 @@
 using namespace gl;
 
 CuboidInstancing::CuboidInstancing()
-: m_vertices(0)
+: CuboidImplementation("Instancing")
+, m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
 , m_fragmentShader(0)

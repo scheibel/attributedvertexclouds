@@ -7,13 +7,19 @@
 
 using namespace gl;
 
-CuboidImplementation::CuboidImplementation()
-: m_initialized(false)
+CuboidImplementation::CuboidImplementation(const std::string & name)
+: m_name(name)
+, m_initialized(false)
 {
 }
 
 CuboidImplementation::~CuboidImplementation()
 {
+}
+
+const std::string & CuboidImplementation::name() const
+{
+    return m_name;
 }
 
 bool CuboidImplementation::initialized() const

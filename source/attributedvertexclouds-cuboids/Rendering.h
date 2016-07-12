@@ -3,22 +3,9 @@
 
 #include <glbinding/gl/types.h>
 
-#include "CuboidVertexCloud.h"
-#include "CuboidTriangles.h"
-#include "CuboidTriangleStrip.h"
-#include "CuboidInstancing.h"
 
+class CuboidImplementation;
 
-// For more information on how to write C++ please adhere to: 
-// http://cginternals.github.io/guidelines/cpp/index.html
-
-enum class CuboidTechnique
-{
-    Triangles,
-    TriangleStrip,
-    Instancing,
-    VertexCloud
-};
 
 class Rendering
 {
@@ -41,11 +28,8 @@ public:
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
-    CuboidTechnique m_current;
-    CuboidTriangles m_triangles;
-    CuboidInstancing m_instancing;
-    CuboidTriangleStrip m_triangleStrip;
-    CuboidVertexCloud m_avc;
+    CuboidImplementation * m_current;
+    std::array<CuboidImplementation *, 4> m_implementations;
 
     gl::GLuint m_query;
 

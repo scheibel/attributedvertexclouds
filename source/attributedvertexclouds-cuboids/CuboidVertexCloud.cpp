@@ -8,7 +8,8 @@
 using namespace gl;
 
 CuboidVertexCloud::CuboidVertexCloud()
-: m_vertices(0)
+: CuboidImplementation("Attributed Vertex Cloud")
+, m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
 , m_geometryShader(0)

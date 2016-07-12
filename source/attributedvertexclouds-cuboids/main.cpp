@@ -38,7 +38,7 @@ void resizeCallback(GLFWwindow * /*window*/, int width, int height)
     rendering.resize(width, height);
 }
 
-void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int mods)
+void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
 {
     if (key == GLFW_KEY_F5 && action == GLFW_RELEASE)
     {
@@ -48,14 +48,12 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
 
     if (key == GLFW_KEY_M && action == GLFW_RELEASE)
     {
-        if (mods == GLFW_MOD_SHIFT)
-        {
-            rendering.spaceMeasurement();
-        }
-        else
-        {
-            rendering.togglePerformanceMeasurements();
-        }
+        rendering.togglePerformanceMeasurements();
+    }
+
+    if (key == GLFW_KEY_P && action == GLFW_RELEASE)
+    {
+        rendering.spaceMeasurement();
     }
 
     if (key >= GLFW_KEY_1 && key <= GLFW_KEY_4 && action == GLFW_RELEASE)
@@ -91,8 +89,8 @@ int main(int /*argc*/, char ** /*argv*/)
     std::cout << " [4] Attributed Vertex Cloud" << std::endl;
     std::cout << std::endl;
     std::cout << "Measuring" << std::endl;
-    std::cout << " [m] Start/Stop Performance Measurements" << std::endl;
-    std::cout << " [M] Print Memory Measurements" << std::endl;
+    std::cout << " [p] Start/Stop Performance Measurements" << std::endl;
+    std::cout << " [m] Print Memory Measurements" << std::endl;
     std::cout << std::endl;
     std::cout << "Debugging" << std::endl;
     std::cout << " [F5]: Shader Reload" << std::endl;

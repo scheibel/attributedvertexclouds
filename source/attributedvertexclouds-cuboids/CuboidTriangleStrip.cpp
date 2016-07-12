@@ -10,7 +10,8 @@
 using namespace gl;
 
 CuboidTriangleStrip::CuboidTriangleStrip()
-: m_vertices(0)
+: CuboidImplementation("Triangle Strip")
+, m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
 , m_fragmentShader(0)
