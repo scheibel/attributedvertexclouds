@@ -35,6 +35,7 @@ Rendering::Rendering()
 : m_current(nullptr)
 , m_query(0)
 , m_measure(false)
+, m_rasterizerDiscard(false)
 {
     m_implementations[0] = new CuboidTriangles;
     m_implementations[1] = new CuboidTriangleStrip;
@@ -155,9 +156,19 @@ void Rendering::render()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    if (m_measure && m_rasterizerDiscard)
+    {
+        glEnable(GL_RASTERIZER_DISCARD);
+    }
+
     measureGPU("rendering", [this]() {
         m_current->render();
     }, m_measure);
+
+    if (m_measure && m_rasterizerDiscard)
+    {
+        glDisable(GL_RASTERIZER_DISCARD);
+    }
 }
 
 void Rendering::spaceMeasurement()
@@ -224,7 +235,8 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << value << "ns" << std::endl;
 }
 
-void Rendering::togglePerformanceMeasurements()
+void Rendering::togglePerformanceMeasurements(bool rasterizerDiscard)
 {
     m_measure = !m_measure;
+    m_rasterizerDiscard = m_measure && rasterizerDiscard;
 }

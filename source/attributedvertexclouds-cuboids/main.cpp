@@ -38,7 +38,7 @@ void resizeCallback(GLFWwindow * /*window*/, int width, int height)
     rendering.resize(width, height);
 }
 
-void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
+void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int mods)
 {
     if (key == GLFW_KEY_F5 && action == GLFW_RELEASE)
     {
@@ -48,7 +48,7 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
 
     if (key == GLFW_KEY_M && action == GLFW_RELEASE)
     {
-        rendering.togglePerformanceMeasurements();
+        rendering.togglePerformanceMeasurements(static_cast<bool>(mods & GLFW_MOD_SHIFT));
     }
 
     if (key == GLFW_KEY_P && action == GLFW_RELEASE)

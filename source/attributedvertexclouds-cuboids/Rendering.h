@@ -20,7 +20,7 @@ public:
     void render();
 
     void setTechnique(int i);
-    void togglePerformanceMeasurements();
+    void togglePerformanceMeasurements(bool rasterizerDiscard);
     void spaceMeasurement();
     void reloadShaders();
 
@@ -39,6 +39,7 @@ protected:
     std::chrono::high_resolution_clock::time_point m_start;
 
     bool m_measure;
+    bool m_rasterizerDiscard;
 
     void updateUniforms();
 };
