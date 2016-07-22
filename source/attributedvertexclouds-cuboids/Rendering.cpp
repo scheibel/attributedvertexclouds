@@ -26,6 +26,7 @@ namespace
 
 
 static const size_t cuboidCount = 50000;
+static const size_t fpsSampleCount = 100;
 
 
 } // namespace
@@ -36,6 +37,7 @@ Rendering::Rendering()
 , m_query(0)
 , m_measure(false)
 , m_rasterizerDiscard(false)
+, m_fpsSamples(fpsSampleCount+1)
 {
     m_implementations[0] = new CuboidTriangles;
     m_implementations[1] = new CuboidTriangleStrip;
@@ -142,10 +144,42 @@ void Rendering::resize(int w, int h)
 void Rendering::setTechnique(int i)
 {
     m_current = m_implementations.at(i);
+
+    switch (i)
+    {
+    case 0:
+        std::cout << "Switch to Triangles implementation" << std::endl;
+        break;
+    case 1:
+        std::cout << "Switch to TriangleStrip implementation" << std::endl;
+        break;
+    case 2:
+        std::cout << "Switch to Instancing implementation" << std::endl;
+        break;
+    case 3:
+        std::cout << "Switch to AttributedVertexCloud implementation" << std::endl;
+        break;
+    }
 }
 
 void Rendering::render()
 {
+    if (m_fpsSamples == fpsSampleCount)
+    {
+        const auto end = std::chrono::high_resolution_clock::now();
+
+        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - m_fpsMeasurementStart).count() / 1000.0f / fpsSampleCount;
+
+        std::cout << "Measured " << (1.0f / elapsed) << "FPS (" << "(~ " << (elapsed * 1000.0f) << "ms per frame)" << std::endl;
+
+        m_fpsSamples = fpsSampleCount + 1;
+    }
+
+    if (m_fpsSamples < fpsSampleCount)
+    {
+        ++m_fpsSamples;
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glViewport(0, 0, m_width, m_height);
@@ -156,7 +190,7 @@ void Rendering::render()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (m_measure && m_rasterizerDiscard)
+    if (m_rasterizerDiscard)
     {
         glEnable(GL_RASTERIZER_DISCARD);
     }
@@ -165,7 +199,7 @@ void Rendering::render()
         m_current->render();
     }, m_measure);
 
-    if (m_measure && m_rasterizerDiscard)
+    if (m_rasterizerDiscard)
     {
         glDisable(GL_RASTERIZER_DISCARD);
     }
@@ -235,8 +269,18 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << value << "ns" << std::endl;
 }
 
-void Rendering::togglePerformanceMeasurements(bool rasterizerDiscard)
+void Rendering::togglePerformanceMeasurements()
 {
     m_measure = !m_measure;
-    m_rasterizerDiscard = m_measure && rasterizerDiscard;
+}
+
+void Rendering::toggleRasterizerDiscard()
+{
+    m_rasterizerDiscard = !m_rasterizerDiscard;
+}
+
+void Rendering::startFPSMeasuring()
+{
+    m_fpsSamples = 0;
+    m_fpsMeasurementStart = std::chrono::high_resolution_clock::now();
 }

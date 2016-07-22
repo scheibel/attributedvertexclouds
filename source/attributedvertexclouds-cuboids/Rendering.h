@@ -20,9 +20,11 @@ public:
     void render();
 
     void setTechnique(int i);
-    void togglePerformanceMeasurements(bool rasterizerDiscard);
+    void togglePerformanceMeasurements();
+    void toggleRasterizerDiscard();
     void spaceMeasurement();
     void reloadShaders();
+    void startFPSMeasuring();
 
     void measureGPU(const std::string & name, std::function<void()> callback, bool on) const;
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
@@ -40,6 +42,9 @@ protected:
 
     bool m_measure;
     bool m_rasterizerDiscard;
+
+    size_t m_fpsSamples;
+    std::chrono::high_resolution_clock::time_point m_fpsMeasurementStart;
 
     void updateUniforms();
 };

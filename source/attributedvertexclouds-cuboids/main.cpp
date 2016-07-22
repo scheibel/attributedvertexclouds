@@ -38,7 +38,7 @@ void resizeCallback(GLFWwindow * /*window*/, int width, int height)
     rendering.resize(width, height);
 }
 
-void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int mods)
+void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
 {
     if (key == GLFW_KEY_F5 && action == GLFW_RELEASE)
     {
@@ -46,9 +46,20 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         rendering.reloadShaders();
     }
 
+    if (key == GLFW_KEY_F6 && action == GLFW_RELEASE)
+    {
+        std::cout << "Start FPS measuring" << std::endl;
+        rendering.startFPSMeasuring();
+    }
+
     if (key == GLFW_KEY_M && action == GLFW_RELEASE)
     {
-        rendering.togglePerformanceMeasurements(static_cast<bool>(mods & GLFW_MOD_SHIFT));
+        rendering.togglePerformanceMeasurements();
+    }
+
+    if (key == GLFW_KEY_R && action == GLFW_RELEASE)
+    {
+        rendering.toggleRasterizerDiscard();
     }
 
     if (key == GLFW_KEY_P && action == GLFW_RELEASE)
@@ -93,6 +104,7 @@ int main(int /*argc*/, char ** /*argv*/)
     std::cout << " [m] Print Memory Measurements" << std::endl;
     std::cout << std::endl;
     std::cout << "Debugging" << std::endl;
+    std::cout << " [r] Enable/Disable rasterizer" << std::endl;
     std::cout << " [F5]: Shader Reload" << std::endl;
 
     glfwSetErrorCallback(errorCallback);
