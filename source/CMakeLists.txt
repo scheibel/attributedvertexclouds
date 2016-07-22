@@ -19,6 +19,7 @@ set(IDE_FOLDER "")
 # Examples
 set(IDE_FOLDER "Examples")
 add_subdirectory(attributedvertexclouds-cuboids)
+add_subdirectory(attributedvertexclouds-arcs)
 
 
 # 
