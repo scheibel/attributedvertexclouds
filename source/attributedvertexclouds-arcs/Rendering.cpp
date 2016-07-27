@@ -26,6 +26,7 @@ namespace
 
 
 static const size_t arcCount = 50000;
+static const size_t arcTessellationCount = 128;
 static const size_t fpsSampleCount = 100;
 
 
@@ -101,6 +102,8 @@ void Rendering::createGeometry()
 
         a.colorValue = glm::linearRand(0.0f, 1.0f);
         a.gradientIndex = 0;
+
+        a.tessellationCount = glm::round((a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::linearRand(4.0f, 64.0f) / (2.0f * glm::pi<float>()));
 
         for (auto implementation : m_implementations)
         {

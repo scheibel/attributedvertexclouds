@@ -69,6 +69,7 @@ void ArcVertexCloud::initializeVAO()
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 2, m_radiusRange.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 8, verticesCount() * sizeof(float) * 1, m_colorValue.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 9, verticesCount() * sizeof(float) * 1, m_gradientIndex.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 10, verticesCount() * sizeof(float) * 1, m_tessellationCount.data());
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 2));
@@ -76,6 +77,7 @@ void ArcVertexCloud::initializeVAO()
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
     glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 8));
     glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 9));
+    glVertexAttribIPointer(6, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 10));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -83,6 +85,7 @@ void ArcVertexCloud::initializeVAO()
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
     glEnableVertexAttribArray(5);
+    glEnableVertexAttribArray(6);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -171,6 +174,7 @@ void ArcVertexCloud::setArc(size_t index, const Arc & arc)
     m_radiusRange[index] = arc.radiusRange;
     m_colorValue[index] = arc.colorValue;
     m_gradientIndex[index] = arc.gradientIndex;
+    m_tessellationCount[index] = arc.tessellationCount;
 }
 
 size_t ArcVertexCloud::size() const
@@ -205,7 +209,7 @@ size_t ArcVertexCloud::vertexByteSize() const
 
 size_t ArcVertexCloud::componentCount() const
 {
-    return 10;
+    return 11;
 }
 
 void ArcVertexCloud::resize(size_t count)
@@ -216,6 +220,7 @@ void ArcVertexCloud::resize(size_t count)
     m_radiusRange.resize(count);
     m_colorValue.resize(count);
     m_gradientIndex.resize(count);
+    m_tessellationCount.resize(count);
 }
 
 void ArcVertexCloud::onRender()
@@ -237,7 +242,7 @@ void ArcVertexCloud::onRender()
     //glDepthFunc(GL_LEQUAL);
     //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     //glUseProgram(m_programs[1]);
-    //glDrawArrays(GL_POINTS, 0, size());
+    //glDrawArrays(GL_PATCHES, 0, size());
 
     // Color Pass
 
