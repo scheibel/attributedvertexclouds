@@ -47,6 +47,8 @@ public:
     gl::GLuint m_vao;
 
     gl::GLuint m_vertexShader;
+    gl::GLuint m_tessControlShader;
+    gl::GLuint m_tessEvaluationShader;
     gl::GLuint m_geometryShader;
     gl::GLuint m_fragmentShader;
 

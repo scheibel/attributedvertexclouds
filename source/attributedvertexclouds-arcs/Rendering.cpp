@@ -88,13 +88,17 @@ void Rendering::createGeometry()
     for (size_t i = 0; i < arcCount; ++i)
     {
         Arc a;
-        a.center = glm::vec2(glm::linearRand(-8.0f, 8.0f), glm::linearRand(-8.0f, 8.0f));
-        a.heightRange = glm::vec2(glm::linearRand(-0.5f, 0.5f), glm::linearRand(0.1f, 0.5f));
+        a.center = glm::vec2(glm::linearRand(-7.0f, 7.0f), glm::linearRand(-7.0f, 7.0f));
+
+        a.heightRange = glm::vec2(glm::linearRand(-4.0f, 4.0f), glm::linearRand(0.1f, 0.3f));
         a.heightRange.y += a.heightRange.x;
-        a.angleRange = glm::vec2(glm::linearRand(-2.0f * glm::pi<float>(), 2.0f * glm::pi<float>()), glm::linearRand(-2.0f * glm::pi<float>(), 2.0f * glm::pi<float>()));
+
+        a.angleRange = glm::vec2(glm::linearRand(0.0f * glm::pi<float>(), 2.0f * glm::pi<float>()), glm::linearRand(0.1f * glm::pi<float>(), 0.9f * glm::pi<float>()));
         a.angleRange.y += a.angleRange.x;
-        a.radiusRange = glm::vec2(glm::linearRand(0.1f, 0.4f), glm::linearRand(0.1f, 0.4f));
+
+        a.radiusRange = glm::vec2(glm::linearRand(0.3f, 1.0f), glm::linearRand(0.2f, 0.8f));
         a.radiusRange.y += a.radiusRange.x;
+
         a.colorValue = glm::linearRand(0.0f, 1.0f);
         a.gradientIndex = 0;
 
@@ -213,9 +217,9 @@ void Rendering::render()
 void Rendering::spaceMeasurement()
 {
     const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
-            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const CuboidImplementation * technique) {
+            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const ArcImplementation * technique) {
                 return std::max(currentSize, technique->fullByteSize());
-            }), [](size_t currentSize, const CuboidImplementation * technique) {
+            }), [](size_t currentSize, const ArcImplementation * technique) {
         return std::min(currentSize, technique->fullByteSize());
     });
 
@@ -224,7 +228,7 @@ void Rendering::spaceMeasurement()
         std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
     };
 
-    std::cout << "Cuboid count: " << arcCount << std::endl;
+    std::cout << "Arc count: " << arcCount << std::endl;
     std::cout << std::endl;
 
     for (const auto implementation : m_implementations)
