@@ -24,11 +24,12 @@ using namespace gl;
 namespace
 {
 
+static const auto arcGridSize = size_t(48);
+static const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
+static const auto arcTessellationCount = size_t(128);
+static const auto fpsSampleCount = size_t(100);
 
-static const size_t arcCount = 50000;
-static const size_t arcTessellationCount = 128;
-static const size_t fpsSampleCount = 100;
-
+static const auto worldScale = glm::vec3(1.3f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
 
 } // namespace
 
@@ -85,25 +86,33 @@ void Rendering::createGeometry()
         implementation->resize(arcCount);
     }
 
+    std::array<std::vector<float>, 6> noise;
+    for (auto i = size_t(0); i < noise.size(); ++i)
+    {
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
+    }
+
 #pragma omp parallel for
     for (size_t i = 0; i < arcCount; ++i)
     {
+        const auto position = glm::ivec3(i % arcGridSize, (i / arcGridSize) % arcGridSize, i / arcGridSize / arcGridSize);
+
         Arc a;
-        a.center = glm::vec2(glm::linearRand(-7.0f, 7.0f), glm::linearRand(-7.0f, 7.0f));
+        a.center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
 
-        a.heightRange = glm::vec2(glm::linearRand(-4.0f, 4.0f), glm::linearRand(0.1f, 0.3f));
-        a.heightRange.y += a.heightRange.x;
+        a.heightRange.x = -0.5f + position.y * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
+        a.heightRange.y = -0.5f + position.y * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
 
-        a.angleRange = glm::vec2(glm::linearRand(0.0f * glm::pi<float>(), 2.0f * glm::pi<float>()), glm::linearRand(0.1f * glm::pi<float>(), 0.9f * glm::pi<float>()));
-        a.angleRange.y += a.angleRange.x;
+        a.angleRange.x = -glm::pi<float>() + 2.0f * glm::pi<float>() * noise[1][i];
+        a.angleRange.y = a.angleRange.x + 2.0f * glm::pi<float>() * noise[2][i];
 
-        a.radiusRange = glm::vec2(glm::linearRand(0.3f, 1.0f), glm::linearRand(0.2f, 0.8f));
-        a.radiusRange.y += a.radiusRange.x;
+        a.radiusRange.x = 0.2f * noise[3][i] * worldScale.x;
+        a.radiusRange.y = a.radiusRange.x + 0.3f * noise[4][i] * worldScale.z;
 
-        a.colorValue = glm::linearRand(0.0f, 1.0f);
+        a.colorValue = noise[5][i];
         a.gradientIndex = 0;
 
-        a.tessellationCount = glm::round((a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::linearRand(4.0f, 64.0f) / (2.0f * glm::pi<float>()));
+        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::linearRand(4.0f, 64.0f) / (2.0f * glm::pi<float>()));
 
         for (auto implementation : m_implementations)
         {
@@ -114,7 +123,7 @@ void Rendering::createGeometry()
 
 void Rendering::updateUniforms()
 {
-    static const auto eye = glm::vec3(1.0f, 12.0f, 1.0f);
+    static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
     static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -129,7 +138,7 @@ void Rendering::updateUniforms()
     //const auto rotatedEye = glm::vec3(12.0f, 0.0f, 0.0f);
 
     const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.2f, 3.0f) * view;
 
     for (auto implementation : m_implementations)
     {

@@ -45,6 +45,27 @@ std::vector<char> rawFromFile(const char * filePath)
     return raw;
 }
 
+std::vector<float> rawFromFileF(const std::string &filePath)
+{
+    auto stream = std::ifstream(filePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+    if (!stream)
+    {
+        std::cerr << "Reading from file '" << filePath << "' failed." << std::endl;
+        return std::vector<float>();
+    }
+
+    stream.seekg(0, std::ios::end);
+
+    const auto size = stream.tellg();
+    auto raw = std::vector<float>(size / sizeof(float));
+
+    stream.seekg(0, std::ios::beg);
+    stream.read(reinterpret_cast<char *>(raw.data()), (size / sizeof(float)) * sizeof(float));
+
+    return raw;
+}
+
 std::string textFromFile(const char * filePath)
 {
     const auto text = rawFromFile(filePath);
