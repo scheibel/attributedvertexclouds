@@ -109,7 +109,7 @@ void main()
     segment[G] = circlePoint(endAngle, outerRadius, endTop, center);
     segment[H] = circlePoint(startAngle, outerRadius, startTop, center);
         
-    if (startTop > 0.0 || endTop > 0.0)
+    if (startBottom - startTop > 0.0 || endBottom - endTop > 0.0)
     {
         if (vertex[0].hasSide)
         {
