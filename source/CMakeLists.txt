@@ -21,6 +21,9 @@ set(IDE_FOLDER "Examples")
 add_subdirectory(attributedvertexclouds-cuboids)
 add_subdirectory(attributedvertexclouds-arcs)
 
+# Tools
+set(IDE_FOLDER "Tools")
+add_subdirectory(noise-generator)
 
 # 
 # Deployment
