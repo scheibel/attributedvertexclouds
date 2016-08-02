@@ -20,6 +20,7 @@ add_subdirectory(common)
 set(IDE_FOLDER "Examples")
 add_subdirectory(attributedvertexclouds-cuboids)
 add_subdirectory(attributedvertexclouds-arcs)
+add_subdirectory(attributedvertexclouds-prismas)
 
 # Tools
 set(IDE_FOLDER "Tools")

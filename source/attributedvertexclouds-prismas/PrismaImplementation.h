@@ -5,14 +5,14 @@
 
 #include <glbinding/gl/types.h>
 
-#include "Cuboid.h"
+#include "Prisma.h"
 
 
-class CuboidImplementation
+class PrismaImplementation
 {
 public:
-    CuboidImplementation(const std::string & name);
-    virtual ~CuboidImplementation();
+    PrismaImplementation(const std::string & name);
+    virtual ~PrismaImplementation();
 
     const std::string & name() const;
 
@@ -30,7 +30,7 @@ public:
 
     virtual bool loadShader() = 0;
 
-    virtual void setCube(size_t index, const Cuboid & cuboid) = 0;
+    virtual void setPrisma(size_t index, const Prisma & prisma) = 0;
 
     virtual size_t size() const = 0;
     virtual size_t verticesCount() const = 0;

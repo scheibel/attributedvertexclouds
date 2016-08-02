@@ -33,7 +33,6 @@ public:
     virtual void setArc(size_t index, const Arc & arc) = 0;
 
     virtual size_t size() const = 0;
-    virtual size_t verticesPerCuboid() const = 0;
     virtual size_t verticesCount() const = 0;
     virtual size_t staticByteSize() const = 0;
     virtual size_t byteSize() const = 0;

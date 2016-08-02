@@ -24,17 +24,16 @@ public:
 
     virtual void setCube(size_t index, const Cuboid & cuboid) override;
 
-    virtual size_t size() const;
-    virtual size_t verticesPerCuboid() const;
-    virtual size_t verticesCount() const;
-    virtual size_t staticByteSize() const;
-    virtual size_t byteSize() const;
-    virtual size_t vertexByteSize() const;
-    virtual size_t componentCount() const;
+    virtual size_t size() const override;
+    virtual size_t verticesCount() const override;
+    virtual size_t staticByteSize() const override;
+    virtual size_t byteSize() const override;
+    virtual size_t vertexByteSize() const override;
+    virtual size_t componentCount() const override;
 
-    virtual void resize(size_t count);
+    virtual void resize(size_t count) override;
 
-    virtual const std::vector<gl::GLuint> & programs() const;
+    virtual const std::vector<gl::GLuint> & programs() const override;
 public:
     std::vector<glm::vec2> m_center;
     std::vector<glm::vec2> m_extent;
@@ -52,4 +51,5 @@ public:
     std::vector<gl::GLuint> m_programs;
 
     void initializeVAO();
+    size_t verticesPerCuboid() const;
 };

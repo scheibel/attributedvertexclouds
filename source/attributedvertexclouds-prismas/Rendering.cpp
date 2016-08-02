@@ -12,10 +12,10 @@
 
 #include "common.h"
 
-#include "ArcVertexCloud.h"
-//#include "ArcTriangles.h"
-//#include "ArcTriangleStrip.h"
-//#include "ArcInstancing.h"
+#include "PrismaVertexCloud.h"
+//#include "PrismaTriangles.h"
+//#include "PrismaTriangleStrip.h"
+//#include "PrismaInstancing.h"
 
 
 using namespace gl;
@@ -24,12 +24,11 @@ using namespace gl;
 namespace
 {
 
-static const auto arcGridSize = size_t(48);
-static const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
-static const auto arcTessellationCount = size_t(128);
+static const auto prismaGridSize = size_t(48);
+static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
 static const auto fpsSampleCount = size_t(100);
 
-static const auto worldScale = glm::vec3(1.3f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
+static const auto worldScale = glm::vec3(1.3f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
 
 } // namespace
 
@@ -41,10 +40,10 @@ Rendering::Rendering()
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
-    m_implementations[0] = new ArcVertexCloud;//new ArcTriangles;
-    m_implementations[1] = new ArcVertexCloud;//new ArcTriangleStrip;
-    m_implementations[2] = new ArcVertexCloud;//new ArcInstancing;
-    m_implementations[3] = new ArcVertexCloud;
+    m_implementations[0] = new PrismaVertexCloud;//new PrismaTriangles;
+    m_implementations[1] = new PrismaVertexCloud;//new PrismaTriangleStrip;
+    m_implementations[2] = new PrismaVertexCloud;//new PrismaInstancing;
+    m_implementations[3] = new PrismaVertexCloud;
 
     setTechnique(0);
 }
@@ -83,40 +82,49 @@ void Rendering::createGeometry()
 {
     for (auto implementation : m_implementations)
     {
-        implementation->resize(arcCount);
+        implementation->resize(prismaCount);
     }
 
-    std::array<std::vector<float>, 6> noise;
+    std::array<std::vector<float>, 4> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
         noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
     }
 
-#pragma omp parallel for
-    for (size_t i = 0; i < arcCount; ++i)
+//#pragma omp parallel for
+    for (size_t i = 0; i < prismaCount; ++i)
     {
-        const auto position = glm::ivec3(i % arcGridSize, (i / arcGridSize) % arcGridSize, i / arcGridSize / arcGridSize);
+        const auto position = glm::ivec3(i % prismaGridSize, (i / prismaGridSize) % prismaGridSize, i / prismaGridSize / prismaGridSize);
 
-        Arc a;
-        a.center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
+        Prisma p;
 
-        a.heightRange.x = -0.5f + position.y * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
-        a.heightRange.y = -0.5f + position.y * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
+        p.heightRange.x = -0.5f + position.y * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
+        p.heightRange.y = -0.5f + position.y * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
 
-        a.angleRange.x = -glm::pi<float>() + 2.0f * glm::pi<float>() * noise[1][i];
-        a.angleRange.y = a.angleRange.x + 2.0f * glm::pi<float>() * noise[2][i];
+        const auto center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
+        const auto radius = noise[2][i];
 
-        a.radiusRange.x = 0.2f * noise[3][i] * worldScale.x;
-        a.radiusRange.y = a.radiusRange.x + 0.3f * noise[4][i] * worldScale.z;
+        const auto vertexCount = size_t(2) + size_t(glm::ceil(14.0f * 0.5f * (noise[1][i] + 1.0f)));
 
-        a.colorValue = noise[5][i];
-        a.gradientIndex = 0;
+        p.points.resize(vertexCount);
 
-        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::linearRand(4.0f, 64.0f) / (2.0f * glm::pi<float>()));
+        for (auto j = size_t(0); j < vertexCount; ++j)
+        {
+            const auto angle = glm::pi<float>() * 2.0f * float(j) / float(vertexCount);
+            const auto normalizedPosition = glm::vec2(
+                glm::cos(angle),
+                glm::sin(angle)
+            );
+
+            p.points[j] = center + glm::vec2(radius, radius) * normalizedPosition * glm::vec2(worldScale.x, worldScale.z);
+        }
+
+        p.colorValue = noise[3][i];
+        p.gradientIndex = 0;
 
         for (auto implementation : m_implementations)
         {
-            implementation->setArc(i, a);
+            implementation->setPrisma(i, p);
         }
     }
 }
@@ -229,9 +237,9 @@ void Rendering::render()
 void Rendering::spaceMeasurement()
 {
     const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
-            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const ArcImplementation * technique) {
+            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const PrismaImplementation * technique) {
                 return std::max(currentSize, technique->fullByteSize());
-            }), [](size_t currentSize, const ArcImplementation * technique) {
+            }), [](size_t currentSize, const PrismaImplementation * technique) {
         return std::min(currentSize, technique->fullByteSize());
     });
 
@@ -240,7 +248,7 @@ void Rendering::spaceMeasurement()
         std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
     };
 
-    std::cout << "Arc count: " << arcCount << std::endl;
+    std::cout << "Prisma count: " << prismaCount << std::endl;
     std::cout << std::endl;
 
     for (const auto implementation : m_implementations)

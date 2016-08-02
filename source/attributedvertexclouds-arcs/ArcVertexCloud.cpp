@@ -182,14 +182,14 @@ size_t ArcVertexCloud::size() const
     return m_center.size();
 }
 
-size_t ArcVertexCloud::verticesPerCuboid() const
+size_t ArcVertexCloud::verticesPerArc() const
 {
     return 1;
 }
 
 size_t ArcVertexCloud::verticesCount() const
 {
-    return size() * verticesPerCuboid();
+    return size() * verticesPerArc();
 }
 
 size_t ArcVertexCloud::staticByteSize() const
@@ -199,7 +199,7 @@ size_t ArcVertexCloud::staticByteSize() const
 
 size_t ArcVertexCloud::byteSize() const
 {
-    return verticesPerCuboid() * size() * vertexByteSize();
+    return verticesPerArc() * size() * vertexByteSize();
 }
 
 size_t ArcVertexCloud::vertexByteSize() const
