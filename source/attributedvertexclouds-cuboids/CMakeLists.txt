@@ -32,9 +32,6 @@ endif()
 set(sources
     main.cpp
     
-    common.h
-    common.cpp
-    
     Rendering.h
     Rendering.cpp
     
@@ -103,6 +100,7 @@ target_link_libraries(${target}
     
     ${GLFW_LIBRARIES}
     glbinding::glbinding
+    common
 )
 
 
