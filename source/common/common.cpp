@@ -131,3 +131,16 @@ bool checkForLinkerError(GLuint program, const std::string & identifier)
     return false;
 
 }
+
+glm::vec3 cameraPath(const glm::vec3 & eye, float f)
+{
+    auto eyeRotation = glm::mat4(1.0f);
+    //eyeRotation = glm::rotate(eyeRotation, glm::sin(0.8342378f * f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //eyeRotation = glm::rotate(eyeRotation, glm::cos(-0.5423543f * f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    eyeRotation = glm::rotate(eyeRotation, 0.1f * f, glm::vec3(0.0f, 1.0f, 0.0f));
+    eyeRotation = glm::rotate(eyeRotation, glm::cos(0.14583f * f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    return glm::vec3(eyeRotation * glm::vec4(eye, 1.0f));
+}

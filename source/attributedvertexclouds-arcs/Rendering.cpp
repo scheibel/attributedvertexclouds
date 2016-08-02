@@ -100,14 +100,30 @@ void Rendering::createGeometry()
         Arc a;
         a.center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
 
-        a.heightRange.x = -0.5f + position.y * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
-        a.heightRange.y = -0.5f + position.y * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
+        if ((position.y + position.z) % 2)
+        {
+            a.center.x += 0.2f * worldScale.x;
+        }
 
-        a.angleRange.x = -glm::pi<float>() + 2.0f * glm::pi<float>() * noise[1][i];
-        a.angleRange.y = a.angleRange.x + 2.0f * glm::pi<float>() * noise[2][i];
+        if ((position.x + position.y) % 2)
+        {
+            a.center.y += 0.2f * worldScale.z;
+        }
 
-        a.radiusRange.x = 0.2f * noise[3][i] * worldScale.x;
-        a.radiusRange.y = a.radiusRange.x + 0.3f * noise[4][i] * worldScale.z;
+        a.heightRange.x = -0.5f + (position.y + 0.5f * noise[0][i]) * worldScale.y;
+        a.heightRange.y = -0.5f + (position.y - 0.5f * noise[0][i]) * worldScale.y;
+
+        if ((position.x + position.z) % 2)
+        {
+            a.heightRange.x += 0.2f * worldScale.y;
+            a.heightRange.y += 0.2f * worldScale.y;
+        }
+
+        a.angleRange.x = -0.5f * glm::pi<float>() + 0.75f * glm::pi<float>() * noise[1][i];
+        a.angleRange.y = 0.25f * glm::pi<float>() + 0.5f * glm::pi<float>() * noise[2][i];
+
+        a.radiusRange.x = 0.4f * noise[3][i] * worldScale.x;
+        a.radiusRange.y = a.radiusRange.x + 0.6f * noise[4][i] * worldScale.x;
 
         a.colorValue = noise[5][i];
         a.gradientIndex = 0;
@@ -129,15 +145,7 @@ void Rendering::updateUniforms()
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
 
-    auto eyeRotation = glm::mat4(1.0f);
-    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.8342378f * f), glm::vec3(0.0f, 1.0f, 0.0f));
-    eyeRotation = glm::rotate(eyeRotation, glm::cos(-0.5423543f * f), glm::vec3(1.0f, 0.0f, 0.0f));
-    eyeRotation = glm::rotate(eyeRotation, glm::sin(0.13234823f * f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    const auto rotatedEye = eyeRotation * glm::vec4(eye, 1.0f);
-    //const auto rotatedEye = glm::vec3(12.0f, 0.0f, 0.0f);
-
-    const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
+    const auto view = glm::lookAt(cameraPath(eye, f), center, up);
     const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.2f, 3.0f) * view;
 
     for (auto implementation : m_implementations)

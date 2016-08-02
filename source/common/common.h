@@ -28,3 +28,5 @@ bool createProgram(const std::string & name, gl::GLuint vertexShader, gl::GLuint
 
 bool checkForCompilationError(gl::GLuint shader, const std::string & identifier);
 bool checkForLinkerError(gl::GLuint program, const std::string & identifier);
+
+glm::vec3 cameraPath(const glm::vec3 & eye, float f);

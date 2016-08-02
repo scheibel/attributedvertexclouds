@@ -5,6 +5,7 @@
 
 #include <glkernel/Kernel.h>
 #include <glkernel/noise.h>
+#include <glkernel/scale.h>
 
 #include <fstream>
 
@@ -27,9 +28,10 @@ int main(int /*argc*/, char ** /*argv*/)
 
     for (auto i = size_t(0); i < componentSize; ++i)
     {
-        glkernel::noise::gradient(kernel, glkernel::noise::GradientNoiseType::Perlin);
+        glkernel::noise::gradient(kernel, glkernel::noise::GradientNoiseType::Simplex);
+        //glkernel::scale::range(kernel, 0.0f, 1.0f, -1.0f, 1.0f);
 
-        std::fstream file("data/noise-"+std::to_string(i)+".raw", std::fstream::out | std::fstream::binary);
+        std::fstream file("data/noise/noise-"+std::to_string(i)+".raw", std::fstream::out | std::fstream::binary);
 
         file.write(reinterpret_cast<char *>(kernel.data()), sizeof(float) * kernel.size());
         file.close();
