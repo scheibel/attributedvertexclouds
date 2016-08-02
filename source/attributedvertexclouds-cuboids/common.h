@@ -15,9 +15,10 @@
 
 #include <glbinding/gl/types.h>
 
-
 // Read raw binary file into a char vector (probably the fastest way).
 std::vector<char> rawFromFile(const char * filePath);
+std::vector<float> rawFromFileF(const std::string & filePath);
+
 bool rawToFile(const char * filePath, const std::vector<char> & raw);
 
 std::string textFromFile(const char * filePath);

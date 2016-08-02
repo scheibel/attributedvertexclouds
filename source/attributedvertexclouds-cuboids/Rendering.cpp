@@ -25,8 +25,11 @@ namespace
 {
 
 
-static const size_t cuboidCount = 50000;
-static const size_t fpsSampleCount = 100;
+static const auto cuboidGridSize = size_t(48);
+static const auto cuboidCount = cuboidGridSize * cuboidGridSize * cuboidGridSize;
+static const auto fpsSampleCount = size_t(100);
+
+static const auto worldScale = glm::vec3(1.3f) / glm::vec3(cuboidGridSize, cuboidGridSize, cuboidGridSize);
 
 
 } // namespace
@@ -84,13 +87,21 @@ void Rendering::createGeometry()
         implementation->resize(cuboidCount);
     }
 
+    std::array<std::vector<float>, 4> noise;
+    for (auto i = size_t(0); i < noise.size(); ++i)
+    {
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
+    }
+
 #pragma omp parallel for
     for (size_t i = 0; i < cuboidCount; ++i)
     {
+        const auto position = glm::ivec3(i % cuboidGridSize, (i / cuboidGridSize) % cuboidGridSize, i / cuboidGridSize / cuboidGridSize);
+
         Cuboid c;
-        c.center = glm::vec3(glm::linearRand(-8.0f, 8.0f), glm::linearRand(-0.5f, 0.5f), glm::linearRand(-8.0f, 8.0f));
-        c.extent = glm::vec3(glm::linearRand(0.1f, 0.4f), glm::linearRand(0.1f, 0.4f), glm::linearRand(0.1f, 0.4f));
-        c.colorValue = glm::linearRand(0.0f, 1.0f);
+        c.center = glm::vec3(-0.5f, -0.5f, -0.5f) + glm::vec3(position) * worldScale;
+        c.extent = glm::vec3(noise[0][i], noise[1][i], noise[2][i]) * worldScale;
+        c.colorValue = noise[3][i];
         c.gradientIndex = 0;
 
         for (auto implementation : m_implementations)
@@ -102,7 +113,7 @@ void Rendering::createGeometry()
 
 void Rendering::updateUniforms()
 {
-    static const auto eye = glm::vec3(1.0f, 12.0f, 1.0f);
+    static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
     static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -117,7 +128,7 @@ void Rendering::updateUniforms()
     //const auto rotatedEye = glm::vec3(12.0f, 0.0f, 0.0f);
 
     const auto view = glm::lookAt(glm::vec3(rotatedEye), center, up);
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 1.0f, 30.0f) * view;
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.2f, 3.0f) * view;
 
     for (auto implementation : m_implementations)
     {
