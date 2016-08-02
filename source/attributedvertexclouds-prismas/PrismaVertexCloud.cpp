@@ -76,8 +76,8 @@ void PrismaVertexCloud::initializeVAO()
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 0));
     glVertexAttribIPointer(1, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(size() * sizeof(float) * 2));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 3));
-    glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(size() * sizeof(float) * 5));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 0 + sizeof(float) * 2));
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(size() * sizeof(float) * 2 + sizeof(float)));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -88,33 +88,33 @@ void PrismaVertexCloud::initializeVAO()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-    glBindBuffer(GL_TEXTURE_BUFFER, m_centerHeightRangeBuffer);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 4 * m_center.size(), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, m_centerHeightRangeBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * m_center.size(), nullptr, GL_STATIC_DRAW);
 
     for (auto i = size_t(0); i < m_center.size(); ++i)
     {
-        glBufferSubData(GL_TEXTURE_BUFFER, 4 * sizeof(float) * i, 2 * sizeof(float), &m_center[i]);
-        glBufferSubData(GL_TEXTURE_BUFFER, 4 * sizeof(float) * i + 2, 2 * sizeof(float), &m_heightRange[i]);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * 4 * i, 2 * sizeof(float), &m_center[i]);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * (4 * i + 2), 2 * sizeof(float), &m_heightRange[i]);
     }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_centerHeightRangeBuffer);
 
     glBindBuffer(GL_TEXTURE_BUFFER, m_colorValueGradientIndexBuffer);
     glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 2 * m_center.size(), nullptr, GL_STATIC_DRAW);
 
     for (auto i = size_t(0); i < m_center.size(); ++i)
     {
-        glBufferSubData(GL_TEXTURE_BUFFER, 2 * sizeof(float) * i, 1 * sizeof(float), &m_colorValue[i]);
-        glBufferSubData(GL_TEXTURE_BUFFER, 2 * sizeof(float) * i + 1, 1 * sizeof(float), &m_gradientIndex[i]);
+        glBufferSubData(GL_TEXTURE_BUFFER, sizeof(float) * 2 * i, 1 * sizeof(float), &m_colorValue[i]);
+        glBufferSubData(GL_TEXTURE_BUFFER, sizeof(float) * (2 * i + 1), 1 * sizeof(float), &m_gradientIndex[i]);
     }
-
-    glBindBuffer(GL_TEXTURE_BUFFER, 0);
-
-
-    glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, m_centerHeightRangeBuffer);
 
     glBindTexture(GL_TEXTURE_BUFFER, m_colorValueGradientIndexTexture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, m_colorValueGradientIndexBuffer);
 
+    glBindBuffer(GL_TEXTURE_BUFFER, 0);
     glBindTexture(GL_TEXTURE_BUFFER, 0);
 }
 
@@ -189,19 +189,22 @@ void PrismaVertexCloud::setPrisma(size_t index, const Prisma & prisma)
 
     const auto firstIndex = m_positions.size();
     m_positions.resize(m_positions.size() + prisma.points.size() + 1);
+    m_prismaIndices.resize(m_prismaIndices.size() + prisma.points.size() + 1);
 
     for (auto i = size_t(0); i < prisma.points.size(); ++i)
     {
         m_positions.at(firstIndex + i) = prisma.points.at(i);
+        m_prismaIndices.at(firstIndex + i) = index;
 
         m_center[index] += prisma.points.at(i);
     }
 
     m_positions.at(firstIndex + prisma.points.size()) = prisma.points.front();
-
-    m_center[index] /= glm::vec2(prisma.points.size());
+    m_prismaIndices.at(firstIndex + prisma.points.size()) = index;
 
     m_mutex.unlock();
+
+    m_center[index] /= glm::vec2(prisma.points.size());
 }
 
 size_t PrismaVertexCloud::size() const
@@ -246,11 +249,12 @@ void PrismaVertexCloud::onRender()
 {
     glBindVertexArray(m_vao);
 
-    glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
-    glActiveTexture(GL_TEXTURE0);
 
-    glBindTexture(GL_TEXTURE_BUFFER, m_colorValueGradientIndexTexture);
     glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_BUFFER, m_colorValueGradientIndexTexture);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);

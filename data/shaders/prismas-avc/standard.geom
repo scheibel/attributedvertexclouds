@@ -7,8 +7,8 @@ const vec3 UP = vec3(0.0, 1.0, 0.0);
 
 uniform mat4 viewProjection;
 
-uniform sampler1D centerAndHeights;
-uniform sampler1D colorAndGradients;
+uniform samplerBuffer centerAndHeights;
+uniform samplerBuffer colorAndGradients;
 
 in vec2 v_start[];
 in int v_startIndex[];
@@ -36,10 +36,8 @@ void main()
         return;
     }
     
-    int prismaIndex = v_startIndex[0];
-    
-    vec4 centerAndHeight = texelFetch(centerAndHeights, prismaIndex, 0);
-    vec2 colorAndGradient = texelFetch(colorAndGradients, prismaIndex, 0).rg;
+    vec4 centerAndHeight = texelFetch(centerAndHeights, v_startIndex[0]).rgba;
+    vec2 colorAndGradient = texelFetch(colorAndGradients, v_startIndex[0]).rg;
     
     vec3 color = colorAndGradient.r * mix(vec3(1, 0, 0), vec3(0, 1, 0), colorAndGradient.g);
     

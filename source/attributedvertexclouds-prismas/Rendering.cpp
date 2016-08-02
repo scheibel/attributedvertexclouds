@@ -101,10 +101,9 @@ void Rendering::createGeometry()
         p.heightRange.x = -0.5f + position.y * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
         p.heightRange.y = -0.5f + position.y * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
 
+        const auto vertexCount = size_t(3) + size_t(glm::ceil(6.0f * 0.5f * (noise[1][i] + 1.0f)));
         const auto center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
-        const auto radius = noise[2][i];
-
-        const auto vertexCount = size_t(2) + size_t(glm::ceil(14.0f * 0.5f * (noise[1][i] + 1.0f)));
+        const auto radius = 0.5f * 0.5f * (noise[2][i] + 1.0f);
 
         p.points.resize(vertexCount);
 
@@ -131,11 +130,11 @@ void Rendering::createGeometry()
 
 void Rendering::updateUniforms()
 {
-    static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
+    static const auto eye = glm::vec3(1.0f, 1.5f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
     static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
+    const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 3000.0f;
 
     auto eyeRotation = glm::mat4(1.0f);
     eyeRotation = glm::rotate(eyeRotation, glm::sin(0.8342378f * f), glm::vec3(0.0f, 1.0f, 0.0f));
