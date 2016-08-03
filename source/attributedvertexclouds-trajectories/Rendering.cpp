@@ -54,6 +54,8 @@ Rendering::~Rendering()
     // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
     glDeleteQueries(1, &m_query);
     glDeleteTextures(1, &m_gradientTexture);
+
+    delete m_current;
 }
 
 void Rendering::initialize()
