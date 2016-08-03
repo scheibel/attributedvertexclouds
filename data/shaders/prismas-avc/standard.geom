@@ -42,16 +42,14 @@ void main()
     
     vec3 color = colorAndGradient.r * mix(vec3(1, 0, 0), vec3(0, 1, 0), colorAndGradient.g);
     
-    vec3 center = vec3(centerAndHeight.r, centerAndHeight.a, centerAndHeight.g);
-    
-    vec3 cBottom = vec3(center.x, centerAndHeight.b, center.z);
+    vec3 cBottom = vec3(centerAndHeight.r, centerAndHeight.b, centerAndHeight.g);
     vec3 sBottom = vec3(v_start[0].x, centerAndHeight.b, v_start[0].y);
     vec3 eBottom = vec3(v_end[0].x, centerAndHeight.b, v_end[0].y);
-    vec3 cTop = center;
+    vec3 cTop = vec3(centerAndHeight.r, centerAndHeight.a, centerAndHeight.g);
     vec3 sTop = vec3(v_start[0].x, centerAndHeight.a, v_start[0].y);
     vec3 eTop = vec3(v_end[0].x, centerAndHeight.a, v_end[0].y);
         
-    vec3 normal = cross(sBottom - eBottom, UP);
+    vec3 normal = cross(eBottom - sBottom, UP);
     
     emit(cBottom, DOWN, color);
     emit(sBottom, DOWN, color);

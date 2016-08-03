@@ -107,7 +107,7 @@ void Rendering::createGeometry()
         p.heightRange.x = -0.5f + (position.y + offset.y) * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
         p.heightRange.y = -0.5f + (position.y + offset.y) * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
 
-        const auto vertexCount = size_t(3) + size_t(glm::ceil(6.0f * 0.5f * (noise[1][i] + 1.0f)));
+        const auto vertexCount = size_t(12) + size_t(glm::ceil(12.0f * 0.5f * (noise[1][i] + 1.0f)));
         const auto center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
         const auto radius = 0.5f * 0.5f * (noise[2][i] + 1.0f);
 

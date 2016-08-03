@@ -5,39 +5,36 @@ flat in vec3 g_normal;
 
 out vec3 out_color;
 
-vec3 lightDirs[5] = vec3[](
+uniform vec3 lightDirs[6] = vec3[](
     vec3( 0,  1,  0),
     vec3( 1,  0,  0),
     vec3(-1,  0,  0),
     vec3( 0,  0,  1),
-    vec3( 0,  0, -1)
+    vec3( 0,  0, -1),
+    vec3( 0, -1,  0)
 );
 
-float lightStrengths[5] = float[](
+uniform float lightStrengths[6] = float[](
     1.0,
-    0.9,
-    0.9,
     0.95,
-    0.95
+    0.9,
+    0.85,
+    0.8,
+    0.75
 );
 
-vec3 shading(in vec3 color, in vec3 normal)
-{    
+void main()
+{
     vec3 col = vec3(0.0);
-    vec3 N = normalize(normal);
+    vec3 N = normalize(g_normal);
 
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         vec3 L = lightDirs[i];
         float lambertTerm = dot(N,L);
 
-        col += max(lambertTerm, 0.0) * color * lightStrengths[i];
+        col += max(lambertTerm, 0.0) * g_color * lightStrengths[i];
     }
     
-    return col;
-}
-
-void main()
-{
-    out_color = shading(g_color, g_normal);
+    out_color = col;
 }
