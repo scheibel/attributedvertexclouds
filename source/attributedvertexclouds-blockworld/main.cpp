@@ -71,6 +71,16 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
     {
         rendering.setTechnique(key - GLFW_KEY_1);
     }
+
+    if (key == GLFW_KEY_KP_ADD && action == GLFW_RELEASE)
+    {
+        rendering.decreaseBlockThreshold();
+    }
+
+    if (key == GLFW_KEY_KP_SUBTRACT && action == GLFW_RELEASE)
+    {
+        rendering.increaseBlockThreshold();
+    }
 }
 
 
@@ -98,6 +108,10 @@ int main(int /*argc*/, char ** /*argv*/)
     std::cout << " [2] Triangle Strip" << std::endl;
     std::cout << " [3] Instancing" << std::endl;
     std::cout << " [4] Attributed Vertex Cloud" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Rendering" << std::endl;
+    std::cout << " [KP +] Render more blocks" << std::endl;
+    std::cout << " [KP -] Render less blocks" << std::endl;
     std::cout << std::endl;
     std::cout << "Measuring" << std::endl;
     std::cout << " [p] Start/Stop Performance Measurements" << std::endl;

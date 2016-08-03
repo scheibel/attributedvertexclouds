@@ -38,6 +38,10 @@ static const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockG
 Rendering::Rendering()
 : m_current(nullptr)
 , m_query(0)
+, m_terrainTexture(0)
+, m_blockThreshold(7)
+, m_width(0)
+, m_height(0)
 , m_measure(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
@@ -114,7 +118,7 @@ void Rendering::createGeometry()
 
         Block b;
         b.position = position;
-        b.type = static_cast<int>(glm::round(4 * glm::pow(noise[0][i], 2.0f)));
+        b.type = static_cast<int>(glm::round(16.0f * noise[0][i]));
 
         for (auto implementation : m_implementations)
         {
@@ -137,9 +141,11 @@ void Rendering::updateUniforms()
     GLuint program = m_current->program();
     const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
     const auto terrainSamplerLocation = glGetUniformLocation(program, "terrain");
+    const auto blockThresholdLocation = glGetUniformLocation(program, "blockThreshold");
     glUseProgram(program);
     glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform1i(terrainSamplerLocation, 0);
+    glUniform1i(blockThresholdLocation, m_blockThreshold);
 
     glUseProgram(0);
 }
@@ -148,6 +154,16 @@ void Rendering::resize(int w, int h)
 {
     m_width = w;
     m_height = h;
+}
+
+void Rendering::increaseBlockThreshold()
+{
+    m_blockThreshold = glm::min(m_blockThreshold+1, 14);
+}
+
+void Rendering::decreaseBlockThreshold()
+{
+    m_blockThreshold = glm::max(m_blockThreshold-1, 0);
 }
 
 void Rendering::setTechnique(int i)

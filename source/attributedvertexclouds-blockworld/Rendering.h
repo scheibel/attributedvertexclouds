@@ -19,6 +19,9 @@ public:
     void resize(int w, int h);
     void render();
 
+    void increaseBlockThreshold();
+    void decreaseBlockThreshold();
+
     void setTechnique(int i);
     void togglePerformanceMeasurements();
     void toggleRasterizerDiscard();
@@ -35,6 +38,8 @@ protected:
 
     gl::GLuint m_query;
     gl::GLuint m_terrainTexture;
+
+    int m_blockThreshold;
 
     int m_width;
     int m_height;

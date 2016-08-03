@@ -5,6 +5,7 @@ flat in int g_type;
 in vec3 g_localCoord;
 
 uniform sampler2DArray terrain;
+uniform int blockThreshold;
 
 uniform vec3 lightDirs[6] = vec3[](
     vec3( 0,  1,  0),
@@ -40,7 +41,7 @@ vec2 extract(in vec3 coords, in vec3 mask)
 
 void main()
 {
-    if (g_type <= 0)
+    if (g_type <= blockThreshold)
     {
         discard;
         return;
@@ -49,7 +50,7 @@ void main()
     vec3 col = vec3(0.0);
     vec3 N = normalize(g_normal);
     vec2 texCoord = extract(g_localCoord, N) * 0.1 + 0.1;
-    vec3 terrainColor = texture(terrain, vec3(texCoord, g_type-1)).rgb;
+    vec3 terrainColor = texture(terrain, vec3(texCoord, (g_type-1)/4)).rgb;
 
     for (int i = 0; i < 6; ++i)
     {
