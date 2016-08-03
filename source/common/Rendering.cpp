@@ -31,6 +31,9 @@ Rendering::Rendering()
 : m_current(nullptr)
 , m_postprocessing(nullptr)
 , m_query(0)
+, m_width(0)
+, m_height(0)
+, m_gridSize(32)
 , m_usePostprocessing(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
@@ -283,4 +286,9 @@ void Rendering::startFPSMeasuring()
 void Rendering::togglePostprocessing()
 {
     m_usePostprocessing = !m_usePostprocessing;
+}
+
+void Rendering::setGridSize(int gridSize)
+{
+    m_gridSize = gridSize;
 }

@@ -21,19 +21,6 @@
 using namespace gl;
 
 
-namespace
-{
-
-
-static const auto blockGridSize = size_t(100);
-static const auto blockCount = blockGridSize * blockGridSize * blockGridSize;
-
-static const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockGridSize, blockGridSize);
-
-
-} // namespace
-
-
 BlockWorldRendering::BlockWorldRendering()
 : m_terrainTexture(0)
 {
@@ -69,6 +56,10 @@ void BlockWorldRendering::onInitialize()
 
 void BlockWorldRendering::onCreateGeometry()
 {
+    const auto blockGridSize = m_gridSize;
+    const auto blockCount = blockGridSize * blockGridSize * blockGridSize;
+    const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockGridSize, blockGridSize);
+
     for (auto implementation : m_implementations)
     {
         implementation->resize(blockCount);
@@ -78,7 +69,7 @@ void BlockWorldRendering::onCreateGeometry()
     std::array<std::vector<float>, 1> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-100-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(blockGridSize)+"-"+std::to_string(i)+".raw");
     }
 
 #pragma omp parallel for
@@ -130,5 +121,5 @@ void BlockWorldRendering::decreaseBlockThreshold()
 
 size_t BlockWorldRendering::primitiveCount()
 {
-    return blockCount;
+    return m_gridSize * m_gridSize * m_gridSize;
 }

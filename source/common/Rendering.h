@@ -27,6 +27,8 @@ public:
     void reloadShaders();
     void startFPSMeasuring();
 
+    void setGridSize(int gridSize);
+
     void measureGPU(const std::string & name, std::function<void()> callback, bool on) const;
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
@@ -39,6 +41,7 @@ protected:
 
     int m_width;
     int m_height;
+    int m_gridSize;
 
     std::chrono::high_resolution_clock::time_point m_start;
 

@@ -22,11 +22,8 @@ namespace
 {
 
 
-static const auto arcGridSize = size_t(48);
-static const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
 static const auto arcTessellationCount = size_t(128);
 
-static const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
 static const auto gridOffset = 0.2f;
 
 static const auto lightGray = glm::vec3(234) / 275.0f;
@@ -72,6 +69,10 @@ void TrajectoryRendering::onInitialize()
 
 void TrajectoryRendering::onCreateGeometry()
 {
+    const auto arcGridSize = m_gridSize;
+    const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
+    const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
+
     for (auto implementation : m_implementations)
     {
         implementation->resize(arcCount);
@@ -80,7 +81,7 @@ void TrajectoryRendering::onCreateGeometry()
     std::array<std::vector<float>, 7> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(arcGridSize)+"-"+std::to_string(i)+".raw");
     }
 
     /*
@@ -137,5 +138,5 @@ void TrajectoryRendering::onFinalizeRendering()
 
 size_t TrajectoryRendering::primitiveCount()
 {
-    return arcCount;
+    return m_gridSize;
 }

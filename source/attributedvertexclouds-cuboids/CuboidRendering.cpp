@@ -25,10 +25,6 @@ namespace
 {
 
 
-static const auto cuboidGridSize = size_t(48);
-static const auto cuboidCount = cuboidGridSize * cuboidGridSize * cuboidGridSize;
-
-static const auto worldScale = glm::vec3(1.0f) / glm::vec3(cuboidGridSize, cuboidGridSize, cuboidGridSize);
 static const auto gridOffset = 0.2f;
 
 static const auto lightGray = glm::vec3(234) / 275.0f;
@@ -77,6 +73,10 @@ void CuboidRendering::onInitialize()
 
 void CuboidRendering::onCreateGeometry()
 {
+    const auto cuboidGridSize = m_gridSize;
+    const auto cuboidCount = cuboidGridSize * cuboidGridSize * cuboidGridSize;
+    const auto worldScale = glm::vec3(1.0f) / glm::vec3(cuboidGridSize, cuboidGridSize, cuboidGridSize);
+
     for (auto implementation : m_implementations)
     {
         implementation->resize(cuboidCount);
@@ -85,7 +85,7 @@ void CuboidRendering::onCreateGeometry()
     std::array<std::vector<float>, 4> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(cuboidGridSize)+"-"+std::to_string(i)+".raw");
     }
 
 #pragma omp parallel for
@@ -129,5 +129,5 @@ void CuboidRendering::onFinalizeRendering()
 
 size_t CuboidRendering::primitiveCount()
 {
-    return cuboidCount;
+    return m_gridSize * m_gridSize * m_gridSize;
 }
