@@ -14,7 +14,7 @@ namespace
 {
 
 
-const auto gridSize = size_t(48);
+const auto gridSize = size_t(32);
 const auto componentSize = size_t(8);
 
 
