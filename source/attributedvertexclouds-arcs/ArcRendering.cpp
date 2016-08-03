@@ -1,5 +1,5 @@
 
-#include "Rendering.h"
+#include "ArcRendering.h"
 
 #include <iostream>
 #include <chrono>
@@ -12,10 +12,10 @@
 
 #include "common.h"
 
-#include "PrismaVertexCloud.h"
-//#include "PrismaTriangles.h"
-//#include "PrismaTriangleStrip.h"
-//#include "PrismaInstancing.h"
+#include "ArcVertexCloud.h"
+//#include "ArcTriangles.h"
+//#include "ArcTriangleStrip.h"
+//#include "ArcInstancing.h"
 
 
 using namespace gl;
@@ -25,11 +25,12 @@ namespace
 {
 
 
-static const auto prismaGridSize = size_t(48);
-static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
+static const auto arcGridSize = size_t(48);
+static const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
+static const auto arcTessellationCount = size_t(128);
 static const auto fpsSampleCount = size_t(100);
 
-static const auto worldScale = glm::vec3(1.0f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
+static const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
 static const auto gridOffset = 0.2f;
 
 static const auto lightGray = glm::vec3(234) / 275.0f;
@@ -41,22 +42,22 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 } // namespace
 
 
-Rendering::Rendering()
+ArcRendering::ArcRendering()
 : m_current(nullptr)
 , m_query(0)
 , m_gradientTexture(0)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
-    m_implementations[0] = new PrismaVertexCloud;//new PrismaTriangles;
-    m_implementations[1] = new PrismaVertexCloud;//new PrismaTriangleStrip;
-    m_implementations[2] = new PrismaVertexCloud;//new PrismaInstancing;
-    m_implementations[3] = new PrismaVertexCloud;
+    m_implementations[0] = new ArcVertexCloud;//new ArcTriangles;
+    m_implementations[1] = new ArcVertexCloud;//new ArcTriangleStrip;
+    m_implementations[2] = new ArcVertexCloud;//new ArcInstancing;
+    m_implementations[3] = new ArcVertexCloud;
 
     setTechnique(0);
 }
 
-Rendering::~Rendering()
+ArcRendering::~ArcRendering()
 {
     // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
     glDeleteQueries(1, &m_query);
@@ -68,7 +69,7 @@ Rendering::~Rendering()
     delete m_implementations[3];
 }
 
-void Rendering::initialize()
+void ArcRendering::initialize()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClearDepth(1.0f);
@@ -98,7 +99,7 @@ void Rendering::initialize()
     m_start = std::chrono::high_resolution_clock::now();
 }
 
-void Rendering::reloadShaders()
+void ArcRendering::reloadShaders()
 {
     for (auto implementation : m_implementations)
     {
@@ -109,61 +110,53 @@ void Rendering::reloadShaders()
     }
 }
 
-void Rendering::createGeometry()
+void ArcRendering::createGeometry()
 {
     for (auto implementation : m_implementations)
     {
-        implementation->resize(prismaCount);
+        implementation->resize(arcCount);
     }
 
-    std::array<std::vector<float>, 4> noise;
+    std::array<std::vector<float>, 7> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
         noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
     }
 
-#pragma omp parallel for
-    for (size_t i = 0; i < prismaCount; ++i)
+//#pragma omp parallel for
+    for (size_t i = 0; i < arcCount; ++i)
     {
-        const auto position = glm::ivec3(i % prismaGridSize, (i / prismaGridSize) % prismaGridSize, i / prismaGridSize / prismaGridSize);
+        const auto position = glm::ivec3(i % arcGridSize, (i / arcGridSize) % arcGridSize, i / arcGridSize / arcGridSize);
         const auto offset = glm::vec3(
             (position.y + position.z) % 2 ? gridOffset : 0.0f,
             (position.x + position.z) % 2 ? gridOffset : 0.0f,
             (position.x + position.y) % 2 ? gridOffset : 0.0f
         );
 
-        Prisma p;
+        Arc a;
+        a.center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
 
-        p.heightRange.x = -0.5f + (position.y + offset.y) * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
-        p.heightRange.y = -0.5f + (position.y + offset.y) * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
+        a.heightRange.x = -0.5f + (position.y + offset.y - 0.5f * noise[0][i]) * worldScale.y;
+        a.heightRange.y = -0.5f + (position.y + offset.y + 0.5f * noise[0][i]) * worldScale.y;
 
-        const auto vertexCount = size_t(3) + size_t(glm::ceil(12.0f * noise[1][i]));
-        const auto center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
-        const auto radius = 0.5f * 0.5f * (noise[2][i] + 1.0f);
+        a.angleRange.x = -0.5f * glm::pi<float>() + 0.75f * glm::pi<float>() * noise[1][i];
+        a.angleRange.y = 0.25f * glm::pi<float>() + 0.5f * glm::pi<float>() * noise[2][i];
 
-        p.points.resize(vertexCount);
+        a.radiusRange.x = 0.3f * noise[3][i] * worldScale.x;
+        a.radiusRange.y = a.radiusRange.x + 0.5f * noise[4][i] * worldScale.x;
 
-        for (auto j = size_t(0); j < vertexCount; ++j)
-        {
-            const auto angle = glm::pi<float>() * 2.0f * float(j) / float(vertexCount);
-            const auto normalizedPosition = glm::vec2(
-                glm::cos(angle),
-                glm::sin(angle)
-            );
+        a.colorValue = noise[5][i];
 
-            p.points[j] = center + glm::vec2(radius, radius) * normalizedPosition * glm::vec2(worldScale.x, worldScale.z);
-        }
-
-        p.colorValue = noise[3][i];
+        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::mix(4.0f, 64.0f, noise[6][i]) / (2.0f * glm::pi<float>()));
 
         for (auto implementation : m_implementations)
         {
-            implementation->setPrisma(i, p);
+            implementation->setArc(i, a);
         }
     }
 }
 
-void Rendering::updateUniforms()
+void ArcRendering::updateUniforms()
 {
     static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -184,13 +177,13 @@ void Rendering::updateUniforms()
     glUseProgram(0);
 }
 
-void Rendering::resize(int w, int h)
+void ArcRendering::resize(int w, int h)
 {
     m_width = w;
     m_height = h;
 }
 
-void Rendering::setTechnique(int i)
+void ArcRendering::setTechnique(int i)
 {
     m_current = m_implementations.at(i);
 
@@ -211,7 +204,7 @@ void Rendering::setTechnique(int i)
     }
 }
 
-void Rendering::render()
+void ArcRendering::render()
 {
     if (m_fpsSamples == fpsSampleCount)
     {
@@ -258,12 +251,12 @@ void Rendering::render()
     glBindTexture(GL_TEXTURE_1D, 0);
 }
 
-void Rendering::spaceMeasurement()
+void ArcRendering::spaceMeasurement()
 {
     const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
-            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const PrismaImplementation * technique) {
+            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const ArcImplementation * technique) {
                 return std::max(currentSize, technique->fullByteSize());
-            }), [](size_t currentSize, const PrismaImplementation * technique) {
+            }), [](size_t currentSize, const ArcImplementation * technique) {
         return std::min(currentSize, technique->fullByteSize());
     });
 
@@ -272,7 +265,7 @@ void Rendering::spaceMeasurement()
         std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
     };
 
-    std::cout << "Prisma count: " << prismaCount << std::endl;
+    std::cout << "Arc count: " << arcCount << std::endl;
     std::cout << std::endl;
 
     for (const auto implementation : m_implementations)
@@ -281,7 +274,7 @@ void Rendering::spaceMeasurement()
     }
 }
 
-void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
+void ArcRendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
     {
@@ -297,7 +290,7 @@ void Rendering::measureCPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns" << std::endl;
 }
 
-void Rendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
+void ArcRendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
     {
@@ -322,12 +315,12 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << value << "ns" << std::endl;
 }
 
-void Rendering::toggleRasterizerDiscard()
+void ArcRendering::toggleRasterizerDiscard()
 {
     m_rasterizerDiscard = !m_rasterizerDiscard;
 }
 
-void Rendering::startFPSMeasuring()
+void ArcRendering::startFPSMeasuring()
 {
     m_fpsSamples = 0;
     m_fpsMeasurementStart = std::chrono::high_resolution_clock::now();

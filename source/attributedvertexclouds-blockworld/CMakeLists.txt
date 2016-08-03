@@ -32,8 +32,8 @@ endif()
 set(sources
     main.cpp
     
-    Rendering.h
-    Rendering.cpp
+    BlockWorldRendering.h
+    BlockWorldRendering.cpp
     
     Block.h
     Block.cpp

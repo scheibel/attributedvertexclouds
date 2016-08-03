@@ -1,5 +1,5 @@
 
-#include "Rendering.h"
+#include "PrismaRendering.h"
 
 #include <iostream>
 #include <chrono>
@@ -12,10 +12,10 @@
 
 #include "common.h"
 
-#include "BlockWorldVertexCloud.h"
-#include "BlockWorldTriangles.h"
-#include "BlockWorldTriangleStrip.h"
-#include "BlockWorldInstancing.h"
+#include "PrismaVertexCloud.h"
+//#include "PrismaTriangles.h"
+//#include "PrismaTriangleStrip.h"
+//#include "PrismaInstancing.h"
 
 
 using namespace gl;
@@ -25,39 +25,42 @@ namespace
 {
 
 
-static const auto blockGridSize = size_t(100);
-static const auto blockCount = blockGridSize * blockGridSize * blockGridSize;
+static const auto prismaGridSize = size_t(48);
+static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
 static const auto fpsSampleCount = size_t(100);
 
-static const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockGridSize, blockGridSize);
+static const auto worldScale = glm::vec3(1.0f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
+static const auto gridOffset = 0.2f;
+
+static const auto lightGray = glm::vec3(234) / 275.0f;
+static const auto red = glm::vec3(196, 30, 20) / 275.0f;
+static const auto orange = glm::vec3(255, 114, 70) / 275.0f;
+static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 
 
 } // namespace
 
 
-Rendering::Rendering()
+PrismaRendering::PrismaRendering()
 : m_current(nullptr)
 , m_query(0)
-, m_terrainTexture(0)
-, m_blockThreshold(7)
-, m_width(0)
-, m_height(0)
+, m_gradientTexture(0)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
-    m_implementations[0] = new BlockWorldTriangles;
-    m_implementations[1] = new BlockWorldTriangleStrip;
-    m_implementations[2] = new BlockWorldInstancing;
-    m_implementations[3] = new BlockWorldVertexCloud;
+    m_implementations[0] = new PrismaVertexCloud;//new PrismaTriangles;
+    m_implementations[1] = new PrismaVertexCloud;//new PrismaTriangleStrip;
+    m_implementations[2] = new PrismaVertexCloud;//new PrismaInstancing;
+    m_implementations[3] = new PrismaVertexCloud;
 
     setTechnique(0);
 }
 
-Rendering::~Rendering()
+PrismaRendering::~PrismaRendering()
 {
     // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
     glDeleteQueries(1, &m_query);
-    glDeleteTextures(1, &m_terrainTexture);
+    glDeleteTextures(1, &m_gradientTexture);
 
     delete m_implementations[0];
     delete m_implementations[1];
@@ -65,7 +68,7 @@ Rendering::~Rendering()
     delete m_implementations[3];
 }
 
-void Rendering::initialize()
+void PrismaRendering::initialize()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClearDepth(1.0f);
@@ -73,25 +76,29 @@ void Rendering::initialize()
 
     createGeometry();
 
-    glGenTextures(1, &m_terrainTexture);
-
-    glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR_MIPMAP_LINEAR));
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(GL_LINEAR));
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, static_cast<GLint>(GL_MIRRORED_REPEAT));
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, static_cast<GLint>(GL_MIRRORED_REPEAT));
-
-    auto terrainData = rawFromFile("data/textures/terrain.512.2048.rgba.ub.raw");
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, static_cast<GLint>(GL_RGBA8), 512, 512, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, terrainData.data());
-
-    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-
     glGenQueries(1, &m_query);
+
+    glGenTextures(1, &m_gradientTexture);
+
+    std::array<glm::vec3, 4> gradient = {{
+        red,
+        orange,
+        yellow,
+        lightGray
+    }};
+
+    glBindTexture(GL_TEXTURE_1D, m_gradientTexture);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, gradient.size(), 0, GL_RGB, GL_FLOAT, gradient.data());
+    glBindTexture(GL_TEXTURE_1D, 0);
 
     m_start = std::chrono::high_resolution_clock::now();
 }
 
-void Rendering::reloadShaders()
+void PrismaRendering::reloadShaders()
 {
     for (auto implementation : m_implementations)
     {
@@ -102,37 +109,61 @@ void Rendering::reloadShaders()
     }
 }
 
-void Rendering::createGeometry()
+void PrismaRendering::createGeometry()
 {
     for (auto implementation : m_implementations)
     {
-        implementation->resize(blockCount);
-        implementation->setBlockSize(worldScale.x);
+        implementation->resize(prismaCount);
     }
 
-    std::array<std::vector<float>, 1> noise;
+    std::array<std::vector<float>, 4> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-100-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
     }
 
 #pragma omp parallel for
-    for (size_t i = 0; i < blockCount; ++i)
+    for (size_t i = 0; i < prismaCount; ++i)
     {
-        const auto position = glm::ivec3(i % blockGridSize, (i / blockGridSize) % blockGridSize, i / blockGridSize / blockGridSize) - glm::ivec3(blockGridSize / 2, blockGridSize / 2, blockGridSize / 2);
+        const auto position = glm::ivec3(i % prismaGridSize, (i / prismaGridSize) % prismaGridSize, i / prismaGridSize / prismaGridSize);
+        const auto offset = glm::vec3(
+            (position.y + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.y) % 2 ? gridOffset : 0.0f
+        );
 
-        Block b;
-        b.position = position;
-        b.type = static_cast<int>(glm::round(16.0f * noise[0][i]));
+        Prisma p;
+
+        p.heightRange.x = -0.5f + (position.y + offset.y) * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
+        p.heightRange.y = -0.5f + (position.y + offset.y) * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
+
+        const auto vertexCount = size_t(3) + size_t(glm::ceil(12.0f * noise[1][i]));
+        const auto center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
+        const auto radius = 0.5f * 0.5f * (noise[2][i] + 1.0f);
+
+        p.points.resize(vertexCount);
+
+        for (auto j = size_t(0); j < vertexCount; ++j)
+        {
+            const auto angle = glm::pi<float>() * 2.0f * float(j) / float(vertexCount);
+            const auto normalizedPosition = glm::vec2(
+                glm::cos(angle),
+                glm::sin(angle)
+            );
+
+            p.points[j] = center + glm::vec2(radius, radius) * normalizedPosition * glm::vec2(worldScale.x, worldScale.z);
+        }
+
+        p.colorValue = noise[3][i];
 
         for (auto implementation : m_implementations)
         {
-            implementation->setBlock(i, b);
+            implementation->setPrisma(i, p);
         }
     }
 }
 
-void Rendering::updateUniforms()
+void PrismaRendering::updateUniforms()
 {
     static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -145,33 +176,21 @@ void Rendering::updateUniforms()
 
     GLuint program = m_current->program();
     const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-    const auto terrainSamplerLocation = glGetUniformLocation(program, "terrain");
-    const auto blockThresholdLocation = glGetUniformLocation(program, "blockThreshold");
+    const auto gradientSamplerLocation = glGetUniformLocation(program, "gradient");
     glUseProgram(program);
     glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
-    glUniform1i(terrainSamplerLocation, 0);
-    glUniform1i(blockThresholdLocation, m_blockThreshold);
+    glUniform1i(gradientSamplerLocation, 0);
 
     glUseProgram(0);
 }
 
-void Rendering::resize(int w, int h)
+void PrismaRendering::resize(int w, int h)
 {
     m_width = w;
     m_height = h;
 }
 
-void Rendering::increaseBlockThreshold()
-{
-    m_blockThreshold = glm::min(m_blockThreshold+1, 14);
-}
-
-void Rendering::decreaseBlockThreshold()
-{
-    m_blockThreshold = glm::max(m_blockThreshold-1, 0);
-}
-
-void Rendering::setTechnique(int i)
+void PrismaRendering::setTechnique(int i)
 {
     m_current = m_implementations.at(i);
 
@@ -192,7 +211,7 @@ void Rendering::setTechnique(int i)
     }
 }
 
-void Rendering::render()
+void PrismaRendering::render()
 {
     if (m_fpsSamples == fpsSampleCount)
     {
@@ -218,15 +237,15 @@ void Rendering::render()
 
     updateUniforms();
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, m_gradientTexture);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (m_rasterizerDiscard)
     {
         glEnable(GL_RASTERIZER_DISCARD);
     }
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
 
     m_current->render();
 
@@ -236,15 +255,15 @@ void Rendering::render()
     }
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    glBindTexture(GL_TEXTURE_1D, 0);
 }
 
-void Rendering::spaceMeasurement()
+void PrismaRendering::spaceMeasurement()
 {
     const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
-            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const BlockWorldImplementation * technique) {
+            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const PrismaImplementation * technique) {
                 return std::max(currentSize, technique->fullByteSize());
-            }), [](size_t currentSize, const BlockWorldImplementation * technique) {
+            }), [](size_t currentSize, const PrismaImplementation * technique) {
         return std::min(currentSize, technique->fullByteSize());
     });
 
@@ -253,7 +272,7 @@ void Rendering::spaceMeasurement()
         std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
     };
 
-    std::cout << "Block count: " << blockCount << std::endl;
+    std::cout << "Prisma count: " << prismaCount << std::endl;
     std::cout << std::endl;
 
     for (const auto implementation : m_implementations)
@@ -262,7 +281,7 @@ void Rendering::spaceMeasurement()
     }
 }
 
-void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
+void PrismaRendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
     {
@@ -278,7 +297,7 @@ void Rendering::measureCPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns" << std::endl;
 }
 
-void Rendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
+void PrismaRendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
     {
@@ -303,12 +322,12 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << value << "ns" << std::endl;
 }
 
-void Rendering::toggleRasterizerDiscard()
+void PrismaRendering::toggleRasterizerDiscard()
 {
     m_rasterizerDiscard = !m_rasterizerDiscard;
 }
 
-void Rendering::startFPSMeasuring()
+void PrismaRendering::startFPSMeasuring()
 {
     m_fpsSamples = 0;
     m_fpsMeasurementStart = std::chrono::high_resolution_clock::now();

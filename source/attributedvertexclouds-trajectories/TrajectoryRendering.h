@@ -3,15 +3,17 @@
 
 #include <glbinding/gl/types.h>
 
+#include "Rendering.h"
 
-class BlockWorldImplementation;
+
+class TrajectoryVertexCloud;
 
 
-class Rendering
+class TrajectoryRendering
 {
 public:
-    Rendering();
-    ~Rendering();
+    TrajectoryRendering();
+    ~TrajectoryRendering();
 
     void initialize();
     void createGeometry();
@@ -19,12 +21,7 @@ public:
     void resize(int w, int h);
     void render();
 
-    void increaseBlockThreshold();
-    void decreaseBlockThreshold();
-
-    void setTechnique(int i);
     void toggleRasterizerDiscard();
-    void spaceMeasurement();
     void reloadShaders();
     void startFPSMeasuring();
 
@@ -32,13 +29,10 @@ public:
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
-    BlockWorldImplementation * m_current;
-    std::array<BlockWorldImplementation *, 4> m_implementations;
+    TrajectoryVertexCloud * m_current;
 
     gl::GLuint m_query;
-    gl::GLuint m_terrainTexture;
-
-    int m_blockThreshold;
+    gl::GLuint m_gradientTexture;
 
     int m_width;
     int m_height;

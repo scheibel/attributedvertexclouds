@@ -4,14 +4,14 @@
 #include <glbinding/gl/types.h>
 
 
-class PrismaImplementation;
+class ArcImplementation;
 
 
-class Rendering
+class ArcRendering
 {
 public:
-    Rendering();
-    ~Rendering();
+    ArcRendering();
+    ~ArcRendering();
 
     void initialize();
     void createGeometry();
@@ -29,8 +29,8 @@ public:
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
-    PrismaImplementation * m_current;
-    std::array<PrismaImplementation *, 4> m_implementations;
+    ArcImplementation * m_current;
+    std::array<ArcImplementation *, 4> m_implementations;
 
     gl::GLuint m_query;
     gl::GLuint m_gradientTexture;

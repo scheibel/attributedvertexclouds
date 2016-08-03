@@ -32,8 +32,8 @@ endif()
 set(sources
     main.cpp
     
-    Rendering.h
-    Rendering.cpp
+    ArcRendering.h
+    ArcRendering.cpp
     
     Arc.h
     Arc.cpp

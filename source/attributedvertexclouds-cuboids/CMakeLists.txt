@@ -32,8 +32,8 @@ endif()
 set(sources
     main.cpp
     
-    Rendering.h
-    Rendering.cpp
+    CuboidRendering.h
+    CuboidRendering.cpp
     
     Cuboid.h
     Cuboid.cpp

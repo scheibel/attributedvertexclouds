@@ -8,11 +8,11 @@ class CuboidImplementation;
 class Postprocessing;
 
 
-class Rendering
+class CuboidRendering
 {
 public:
-    Rendering();
-    ~Rendering();
+    CuboidRendering();
+    ~CuboidRendering();
 
     void initialize();
     void createGeometry();

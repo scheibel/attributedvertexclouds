@@ -4,20 +4,23 @@
 #include <glbinding/gl/types.h>
 
 
-class ArcImplementation;
+class BlockWorldImplementation;
 
 
-class Rendering
+class BlockWorldRendering
 {
 public:
-    Rendering();
-    ~Rendering();
+    BlockWorldRendering();
+    ~BlockWorldRendering();
 
     void initialize();
     void createGeometry();
 
     void resize(int w, int h);
     void render();
+
+    void increaseBlockThreshold();
+    void decreaseBlockThreshold();
 
     void setTechnique(int i);
     void toggleRasterizerDiscard();
@@ -29,11 +32,13 @@ public:
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
-    ArcImplementation * m_current;
-    std::array<ArcImplementation *, 4> m_implementations;
+    BlockWorldImplementation * m_current;
+    std::array<BlockWorldImplementation *, 4> m_implementations;
 
     gl::GLuint m_query;
-    gl::GLuint m_gradientTexture;
+    gl::GLuint m_terrainTexture;
+
+    int m_blockThreshold;
 
     int m_width;
     int m_height;

@@ -32,8 +32,8 @@ endif()
 set(sources
     main.cpp
     
-    Rendering.h
-    Rendering.cpp
+    PrismaRendering.h
+    PrismaRendering.cpp
     
     Prisma.h
     Prisma.cpp

@@ -32,8 +32,8 @@ endif()
 set(sources
     main.cpp
     
-    Rendering.h
-    Rendering.cpp
+    TrajectoryRendering.h
+    TrajectoryRendering.cpp
     
     TrajectoryNode.h
     TrajectoryNode.cpp

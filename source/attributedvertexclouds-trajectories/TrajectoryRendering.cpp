@@ -1,5 +1,5 @@
 
-#include "Rendering.h"
+#include "TrajectoryRendering.h"
 
 #include <iostream>
 #include <chrono>
@@ -12,11 +12,7 @@
 
 #include "common.h"
 
-#include "CuboidVertexCloud.h"
-#include "CuboidTriangles.h"
-#include "CuboidTriangleStrip.h"
-#include "CuboidInstancing.h"
-#include "Postprocessing.h"
+#include "TrajectoryVertexCloud.h"
 
 
 using namespace gl;
@@ -26,11 +22,12 @@ namespace
 {
 
 
-static const auto cuboidGridSize = size_t(48);
-static const auto cuboidCount = cuboidGridSize * cuboidGridSize * cuboidGridSize;
+static const auto arcGridSize = size_t(48);
+static const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
+static const auto arcTessellationCount = size_t(128);
 static const auto fpsSampleCount = size_t(100);
 
-static const auto worldScale = glm::vec3(1.0f) / glm::vec3(cuboidGridSize, cuboidGridSize, cuboidGridSize);
+static const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
 static const auto gridOffset = 0.2f;
 
 static const auto lightGray = glm::vec3(234) / 275.0f;
@@ -42,38 +39,26 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 } // namespace
 
 
-Rendering::Rendering()
+TrajectoryRendering::TrajectoryRendering()
 : m_current(nullptr)
-, m_postprocessing(nullptr)
 , m_query(0)
 , m_gradientTexture(0)
-, m_usePostprocessing(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
-    m_implementations[0] = new CuboidTriangles;
-    m_implementations[1] = new CuboidTriangleStrip;
-    m_implementations[2] = new CuboidInstancing;
-    m_implementations[3] = new CuboidVertexCloud;
-    m_postprocessing = new Postprocessing;
-
-    setTechnique(0);
+    m_current = new TrajectoryVertexCloud;
 }
 
-Rendering::~Rendering()
+TrajectoryRendering::~TrajectoryRendering()
 {
     // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
     glDeleteQueries(1, &m_query);
     glDeleteTextures(1, &m_gradientTexture);
 
-    delete m_implementations[0];
-    delete m_implementations[1];
-    delete m_implementations[2];
-    delete m_implementations[3];
-    delete m_postprocessing;
+    delete m_current;
 }
 
-void Rendering::initialize()
+void TrajectoryRendering::initialize()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClearDepth(1.0f);
@@ -103,55 +88,60 @@ void Rendering::initialize()
     m_start = std::chrono::high_resolution_clock::now();
 }
 
-void Rendering::reloadShaders()
+void TrajectoryRendering::reloadShaders()
 {
-    for (auto implementation : m_implementations)
+    if (m_current->initialized())
     {
-        if (implementation->initialized())
-        {
-            implementation->loadShader();
-        }
+        m_current->loadShader();
     }
-
-    m_postprocessing->loadShader();
 }
 
-void Rendering::createGeometry()
+void TrajectoryRendering::createGeometry()
 {
-    for (auto implementation : m_implementations)
-    {
-        implementation->resize(cuboidCount);
-    }
+    m_current->resize(arcCount);
 
-    std::array<std::vector<float>, 4> noise;
+    std::array<std::vector<float>, 7> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
         noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
     }
 
+    /*
 #pragma omp parallel for
-    for (size_t i = 0; i < cuboidCount; ++i)
+    for (size_t i = 0; i < arcCount; ++i)
     {
-        const auto position = glm::ivec3(i % cuboidGridSize, (i / cuboidGridSize) % cuboidGridSize, i / cuboidGridSize / cuboidGridSize);
+        const auto position = glm::ivec3(i % arcGridSize, (i / arcGridSize) % arcGridSize, i / arcGridSize / arcGridSize);
         const auto offset = glm::vec3(
             (position.y + position.z) % 2 ? gridOffset : 0.0f,
             (position.x + position.z) % 2 ? gridOffset : 0.0f,
             (position.x + position.y) % 2 ? gridOffset : 0.0f
         );
 
-        Cuboid c;
-        c.center = glm::vec3(-0.5f, -0.5f, -0.5f) + (glm::vec3(position) + offset) * worldScale;
-        c.extent = glm::mix(glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(noise[0][i], noise[1][i], noise[2][i])) * worldScale;
-        c.colorValue = glm::mix(0.0f, 1.0f, noise[3][i]);
+        Arc a;
+        a.center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
+
+        a.heightRange.x = -0.5f + (position.y + offset.y - 0.5f * noise[0][i]) * worldScale.y;
+        a.heightRange.y = -0.5f + (position.y + offset.y + 0.5f * noise[0][i]) * worldScale.y;
+
+        a.angleRange.x = -0.5f * glm::pi<float>() + 0.75f * glm::pi<float>() * noise[1][i];
+        a.angleRange.y = 0.25f * glm::pi<float>() + 0.5f * glm::pi<float>() * noise[2][i];
+
+        a.radiusRange.x = 0.3f * noise[3][i] * worldScale.x;
+        a.radiusRange.y = a.radiusRange.x + 0.5f * noise[4][i] * worldScale.x;
+
+        a.colorValue = noise[5][i];
+
+        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::mix(4.0f, 64.0f, noise[6][i]) / (2.0f * glm::pi<float>()));
 
         for (auto implementation : m_implementations)
         {
-            implementation->setCube(i, c);
+            implementation->setArc(i, a);
         }
     }
+    */
 }
 
-void Rendering::updateUniforms()
+void TrajectoryRendering::updateUniforms()
 {
     static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -172,39 +162,13 @@ void Rendering::updateUniforms()
     glUseProgram(0);
 }
 
-void Rendering::resize(int w, int h)
+void TrajectoryRendering::resize(int w, int h)
 {
     m_width = w;
     m_height = h;
-
-    if (m_postprocessing->initialized())
-    {
-        m_postprocessing->resize(m_width, m_height);
-    }
 }
 
-void Rendering::setTechnique(int i)
-{
-    m_current = m_implementations.at(i);
-
-    switch (i)
-    {
-    case 0:
-        std::cout << "Switch to Triangles implementation" << std::endl;
-        break;
-    case 1:
-        std::cout << "Switch to TriangleStrip implementation" << std::endl;
-        break;
-    case 2:
-        std::cout << "Switch to Instancing implementation" << std::endl;
-        break;
-    case 3:
-        std::cout << "Switch to AttributedVertexCloud implementation" << std::endl;
-        break;
-    }
-}
-
-void Rendering::render()
+void TrajectoryRendering::render()
 {
     if (m_fpsSamples == fpsSampleCount)
     {
@@ -222,36 +186,18 @@ void Rendering::render()
         ++m_fpsSamples;
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glViewport(0, 0, m_width, m_height);
+
     m_current->initialize();
 
     updateUniforms();
 
-    glViewport(0, 0, m_width, m_height);
-
-    if (m_usePostprocessing && !m_rasterizerDiscard)
-    {
-        static const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-        if (!m_postprocessing->initialized())
-        {
-            m_postprocessing->initialize();
-            m_postprocessing->resize(m_width, m_height);
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing->fbo());
-
-        glClearBufferfv(GL_COLOR, 0, white);
-        glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0);
-    }
-    else
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, m_gradientTexture);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (m_rasterizerDiscard)
     {
@@ -267,39 +213,9 @@ void Rendering::render()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, 0);
-
-    if (m_usePostprocessing && !m_rasterizerDiscard)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        m_postprocessing->render();
-    }
 }
 
-void Rendering::spaceMeasurement()
-{
-    const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
-            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const CuboidImplementation * technique) {
-                return std::max(currentSize, technique->fullByteSize());
-            }), [](size_t currentSize, const CuboidImplementation * technique) {
-        return std::min(currentSize, technique->fullByteSize());
-    });
-
-    const auto printSpaceMeasurement = [&reference](const std::string & techniqueName, size_t byteSize)
-    {
-        std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
-    };
-
-    std::cout << "Cuboid count: " << cuboidCount << std::endl;
-    std::cout << std::endl;
-
-    for (const auto implementation : m_implementations)
-    {
-        printSpaceMeasurement(implementation->name(), implementation->fullByteSize());
-    }
-}
-
-void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
+void TrajectoryRendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
     {
@@ -315,7 +231,7 @@ void Rendering::measureCPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns" << std::endl;
 }
 
-void Rendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
+void TrajectoryRendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
 {
     if (!on)
     {
@@ -340,18 +256,13 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     std::cout << name << ": " << value << "ns" << std::endl;
 }
 
-void Rendering::toggleRasterizerDiscard()
+void TrajectoryRendering::toggleRasterizerDiscard()
 {
     m_rasterizerDiscard = !m_rasterizerDiscard;
 }
 
-void Rendering::startFPSMeasuring()
+void TrajectoryRendering::startFPSMeasuring()
 {
     m_fpsSamples = 0;
     m_fpsMeasurementStart = std::chrono::high_resolution_clock::now();
-}
-
-void Rendering::togglePostprocessing()
-{
-    m_usePostprocessing = !m_usePostprocessing;
 }

@@ -11,7 +11,7 @@
 #include <glbinding/gl/gl.h>
 #include <glbinding/callbacks.h>
 
-#include "Rendering.h"
+#include "PrismaRendering.h"
 
 
 // From http://en.cppreference.com/w/cpp/language/namespace:
@@ -21,7 +21,7 @@
 namespace
 {
 
-auto rendering = Rendering();
+auto rendering = PrismaRendering();
 
 const auto canvasWidth = 1440; // in pixel
 const auto canvasHeight = 900; // in pixel
