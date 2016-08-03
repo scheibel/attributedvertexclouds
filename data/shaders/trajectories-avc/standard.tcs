@@ -1,0 +1,39 @@
+#version 400
+
+layout (vertices = 2) out;
+
+in Segment
+{
+    vec3  position;
+    int   type;
+    vec3  incoming;
+    vec3  outgoing;
+    float colorValue;
+    float sizeValue;
+} segment[];
+
+patch out Attributes
+{
+    vec3  position;
+    int   type;
+    vec3  incoming;
+    vec3  outgoing;
+    float colorValue;
+    float sizeValue;
+} attributes;
+
+void main()
+{
+    if (gl_InvocationID == 0)
+    {
+        gl_TessLevelOuter[0] = 1;
+        gl_TessLevelOuter[1] = 1;
+        
+        attributes.position = segment[0].position;
+        attributes.type = segment[0].type;
+        attributes.incoming = segment[0].incoming;
+        attributes.outgoing = segment[0].outgoing;
+        attributes.colorValue = segment[0].colorValue;
+        attributes.sizeValue = segment[0].sizeValue;
+    }
+}

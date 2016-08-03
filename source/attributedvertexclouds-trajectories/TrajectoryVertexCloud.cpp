@@ -86,18 +86,24 @@ void TrajectoryVertexCloud::initializeVAO()
 
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 3, m_position.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 3, verticesCount() * sizeof(float) * 1, m_type.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 4, verticesCount() * sizeof(float) * 1, m_colorValue.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 5, verticesCount() * sizeof(float) * 1, m_sizeValue.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 4, verticesCount() * sizeof(float) * 3, m_incoming.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 7, verticesCount() * sizeof(float) * 3, m_outgoing.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 10, verticesCount() * sizeof(float) * 1, m_colorValue.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 11, verticesCount() * sizeof(float) * 1, m_sizeValue.data());
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
-    glVertexAttribIPointer(1, 1, GL_INT, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 4));
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 5));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
+    glVertexAttribIPointer(1, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 4));
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 7));
+    glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 10));
+    glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 11));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+    glEnableVertexAttribArray(5);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -178,6 +184,8 @@ void TrajectoryVertexCloud::setTrajectoryNode(size_t index, const TrajectoryNode
 {
     m_position[index] = node.position;
     m_type[index] = node.type;
+    m_incoming[index] = node.incoming;
+    m_outgoing[index] = node.outgoing;
     m_colorValue[index] = node.colorValue;
     m_sizeValue[index] = node.sizeValue;
 }
@@ -214,13 +222,15 @@ size_t TrajectoryVertexCloud::vertexByteSize() const
 
 size_t TrajectoryVertexCloud::componentCount() const
 {
-    return 6;
+    return 12;
 }
 
 void TrajectoryVertexCloud::resize(size_t count)
 {
     m_position.resize(count);
     m_type.resize(count);
+    m_incoming.resize(count);
+    m_outgoing.resize(count);
     m_colorValue.resize(count);
     m_sizeValue.resize(count);
 }

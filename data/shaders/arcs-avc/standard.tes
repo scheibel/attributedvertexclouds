@@ -2,9 +2,6 @@
 
 layout (isolines, equal_spacing) in;
 
-uniform float animationStep;
-uniform bool animation;
-
 in float angle[];
 
 patch in Attributes

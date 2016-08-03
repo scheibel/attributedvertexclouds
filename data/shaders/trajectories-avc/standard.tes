@@ -1,0 +1,33 @@
+#version 400
+
+layout (isolines, equal_spacing) in;
+
+patch in Attributes
+{
+    vec3  position;
+    int   type;
+    vec3  incoming;
+    vec3  outgoing;
+    float colorValue;
+    float sizeValue;
+} attributes;
+
+out Vertex
+{
+    vec3  position;
+    int   type;
+    vec3  incoming;
+    vec3  outgoing;
+    float colorValue;
+    float sizeValue;
+} vertex;
+
+void main()
+{
+    vertex.position = attributes.position;
+    vertex.type = attributes.type;
+    vertex.incoming = attributes.incoming;
+    vertex.outgoing = attributes.outgoing;
+    vertex.colorValue = attributes.colorValue;
+    vertex.sizeValue = attributes.sizeValue;
+}

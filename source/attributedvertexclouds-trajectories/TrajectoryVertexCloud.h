@@ -43,6 +43,8 @@ public:
 
     std::vector<glm::vec3> m_position;
     std::vector<int> m_type;
+    std::vector<glm::vec3> m_incoming;
+    std::vector<glm::vec3> m_outgoing;
     std::vector<float> m_colorValue;
     std::vector<float> m_sizeValue;
 
