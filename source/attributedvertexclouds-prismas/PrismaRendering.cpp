@@ -27,7 +27,6 @@ namespace
 
 static const auto prismaGridSize = size_t(48);
 static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
-static const auto fpsSampleCount = size_t(100);
 
 static const auto worldScale = glm::vec3(1.0f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
 static const auto gridOffset = 0.2f;

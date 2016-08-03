@@ -27,7 +27,6 @@ namespace
 
 static const auto blockGridSize = size_t(100);
 static const auto blockCount = blockGridSize * blockGridSize * blockGridSize;
-static const auto fpsSampleCount = size_t(100);
 
 static const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockGridSize, blockGridSize);
 
@@ -36,42 +35,21 @@ static const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockG
 
 
 BlockWorldRendering::BlockWorldRendering()
-: m_current(nullptr)
-, m_query(0)
-, m_terrainTexture(0)
-, m_blockThreshold(7)
-, m_width(0)
-, m_height(0)
-, m_rasterizerDiscard(false)
-, m_fpsSamples(fpsSampleCount+1)
+: m_terrainTexture(0)
 {
-    m_implementations[0] = new BlockWorldTriangles;
-    m_implementations[1] = new BlockWorldTriangleStrip;
-    m_implementations[2] = new BlockWorldInstancing;
-    m_implementations[3] = new BlockWorldVertexCloud;
-
-    setTechnique(0);
 }
 
 BlockWorldRendering::~BlockWorldRendering()
 {
-    // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
-    glDeleteQueries(1, &m_query);
     glDeleteTextures(1, &m_terrainTexture);
-
-    delete m_implementations[0];
-    delete m_implementations[1];
-    delete m_implementations[2];
-    delete m_implementations[3];
 }
 
-void BlockWorldRendering::initialize()
+void BlockWorldRendering::onInitialize()
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClearDepth(1.0f);
-    glEnable(GL_DEPTH_TEST);
-
-    createGeometry();
+    addImplementation(new BlockWorldTriangles);
+    addImplementation(new BlockWorldTriangleStrip);
+    addImplementation(new BlockWorldInstancing);
+    addImplementation(new BlockWorldVertexCloud);
 
     glGenTextures(1, &m_terrainTexture);
 
@@ -86,28 +64,15 @@ void BlockWorldRendering::initialize()
 
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
-    glGenQueries(1, &m_query);
-
-    m_start = std::chrono::high_resolution_clock::now();
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void BlockWorldRendering::reloadShaders()
-{
-    for (auto implementation : m_implementations)
-    {
-        if (implementation->initialized())
-        {
-            implementation->loadShader();
-        }
-    }
-}
-
-void BlockWorldRendering::createGeometry()
+void BlockWorldRendering::onCreateGeometry()
 {
     for (auto implementation : m_implementations)
     {
         implementation->resize(blockCount);
-        implementation->setBlockSize(worldScale.x);
+        static_cast<BlockWorldImplementation*>(implementation)->setBlockSize(worldScale.x);
     }
 
     std::array<std::vector<float>, 1> noise;
@@ -127,38 +92,30 @@ void BlockWorldRendering::createGeometry()
 
         for (auto implementation : m_implementations)
         {
-            implementation->setBlock(i, b);
+            static_cast<BlockWorldImplementation*>(implementation)->setBlock(i, b);
         }
     }
 }
 
-void BlockWorldRendering::updateUniforms()
+void BlockWorldRendering::onPrepareRendering()
 {
-    static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
-    static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
-    static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
-
-    const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
-
-    const auto view = glm::lookAt(cameraPath(eye, f), center, up);
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.05f, 2.0f) * view;
-
     GLuint program = m_current->program();
-    const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
     const auto terrainSamplerLocation = glGetUniformLocation(program, "terrain");
     const auto blockThresholdLocation = glGetUniformLocation(program, "blockThreshold");
     glUseProgram(program);
-    glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform1i(terrainSamplerLocation, 0);
     glUniform1i(blockThresholdLocation, m_blockThreshold);
 
     glUseProgram(0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
 }
 
-void BlockWorldRendering::resize(int w, int h)
+void BlockWorldRendering::onFinalizeRendering()
 {
-    m_width = w;
-    m_height = h;
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void BlockWorldRendering::increaseBlockThreshold()
@@ -171,145 +128,7 @@ void BlockWorldRendering::decreaseBlockThreshold()
     m_blockThreshold = glm::max(m_blockThreshold-1, 0);
 }
 
-void BlockWorldRendering::setTechnique(int i)
+size_t BlockWorldRendering::primitiveCount()
 {
-    m_current = m_implementations.at(i);
-
-    switch (i)
-    {
-    case 0:
-        std::cout << "Switch to Triangles implementation" << std::endl;
-        break;
-    case 1:
-        std::cout << "Switch to TriangleStrip implementation" << std::endl;
-        break;
-    case 2:
-        std::cout << "Switch to Instancing implementation" << std::endl;
-        break;
-    case 3:
-        std::cout << "Switch to AttributedVertexCloud implementation" << std::endl;
-        break;
-    }
-}
-
-void BlockWorldRendering::render()
-{
-    if (m_fpsSamples == fpsSampleCount)
-    {
-        const auto end = std::chrono::high_resolution_clock::now();
-
-        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - m_fpsMeasurementStart).count() / 1000.0f / fpsSampleCount;
-
-        std::cout << "Measured " << (1.0f / elapsed) << "FPS (" << "(~ " << (elapsed * 1000.0f) << "ms per frame)" << std::endl;
-
-        m_fpsSamples = fpsSampleCount + 1;
-    }
-
-    if (m_fpsSamples < fpsSampleCount)
-    {
-        ++m_fpsSamples;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glViewport(0, 0, m_width, m_height);
-
-    m_current->initialize();
-
-    updateUniforms();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (m_rasterizerDiscard)
-    {
-        glEnable(GL_RASTERIZER_DISCARD);
-    }
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
-
-    m_current->render();
-
-    if (m_rasterizerDiscard)
-    {
-        glDisable(GL_RASTERIZER_DISCARD);
-    }
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-}
-
-void BlockWorldRendering::spaceMeasurement()
-{
-    const auto reference = std::accumulate(m_implementations.begin(), m_implementations.end(),
-            std::accumulate(m_implementations.begin(), m_implementations.end(), 0, [](size_t currentSize, const BlockWorldImplementation * technique) {
-                return std::max(currentSize, technique->fullByteSize());
-            }), [](size_t currentSize, const BlockWorldImplementation * technique) {
-        return std::min(currentSize, technique->fullByteSize());
-    });
-
-    const auto printSpaceMeasurement = [&reference](const std::string & techniqueName, size_t byteSize)
-    {
-        std::cout << techniqueName << std::endl << (byteSize / 1024) << "kB (" << (static_cast<float>(byteSize) / reference) << "x)" << std::endl;
-    };
-
-    std::cout << "Block count: " << blockCount << std::endl;
-    std::cout << std::endl;
-
-    for (const auto implementation : m_implementations)
-    {
-        printSpaceMeasurement(implementation->name(), implementation->fullByteSize());
-    }
-}
-
-void BlockWorldRendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
-{
-    if (!on)
-    {
-        return callback();
-    }
-
-    const auto start = std::chrono::high_resolution_clock::now();
-
-    callback();
-
-    const auto end = std::chrono::high_resolution_clock::now();
-
-    std::cout << name << ": " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns" << std::endl;
-}
-
-void BlockWorldRendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
-{
-    if (!on)
-    {
-        return callback();
-    }
-
-    glBeginQuery(gl::GL_TIME_ELAPSED, m_query);
-
-    callback();
-
-    glEndQuery(gl::GL_TIME_ELAPSED);
-
-    int available = 0;
-    while (!available)
-    {
-        glGetQueryObjectiv(m_query, gl::GL_QUERY_RESULT_AVAILABLE, &available);
-    }
-
-    int value;
-    glGetQueryObjectiv(m_query, gl::GL_QUERY_RESULT, &value);
-
-    std::cout << name << ": " << value << "ns" << std::endl;
-}
-
-void BlockWorldRendering::toggleRasterizerDiscard()
-{
-    m_rasterizerDiscard = !m_rasterizerDiscard;
-}
-
-void BlockWorldRendering::startFPSMeasuring()
-{
-    m_fpsSamples = 0;
-    m_fpsMeasurementStart = std::chrono::high_resolution_clock::now();
+    return blockCount;
 }

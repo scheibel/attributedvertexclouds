@@ -1,6 +1,4 @@
 
-#include <chrono>
-
 #include <glbinding/gl/types.h>
 
 #include "Rendering.h"

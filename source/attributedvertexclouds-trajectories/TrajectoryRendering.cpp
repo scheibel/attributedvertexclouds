@@ -72,7 +72,10 @@ void TrajectoryRendering::onInitialize()
 
 void TrajectoryRendering::onCreateGeometry()
 {
-    m_current->resize(arcCount);
+    for (auto implementation : m_implementations)
+    {
+        implementation->resize(arcCount);
+    }
 
     std::array<std::vector<float>, 7> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)

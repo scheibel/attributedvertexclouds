@@ -1,54 +1,26 @@
 
-#include <chrono>
-
 #include <glbinding/gl/types.h>
 
+#include "Rendering.h"
 
-class BlockWorldImplementation;
 
-
-class BlockWorldRendering
+class BlockWorldRendering : public Rendering
 {
 public:
     BlockWorldRendering();
-    ~BlockWorldRendering();
-
-    void initialize();
-    void createGeometry();
-
-    void resize(int w, int h);
-    void render();
+    virtual ~BlockWorldRendering();
 
     void increaseBlockThreshold();
     void decreaseBlockThreshold();
 
-    void setTechnique(int i);
-    void toggleRasterizerDiscard();
-    void spaceMeasurement();
-    void reloadShaders();
-    void startFPSMeasuring();
-
-    void measureGPU(const std::string & name, std::function<void()> callback, bool on) const;
-    void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
-
 protected:
-    BlockWorldImplementation * m_current;
-    std::array<BlockWorldImplementation *, 4> m_implementations;
-
-    gl::GLuint m_query;
     gl::GLuint m_terrainTexture;
 
     int m_blockThreshold;
 
-    int m_width;
-    int m_height;
-
-    std::chrono::high_resolution_clock::time_point m_start;
-
-    bool m_rasterizerDiscard;
-
-    size_t m_fpsSamples;
-    std::chrono::high_resolution_clock::time_point m_fpsMeasurementStart;
-
-    void updateUniforms();
+    virtual void onInitialize() override;
+    virtual void onCreateGeometry() override;
+    virtual void onPrepareRendering() override;
+    virtual void onFinalizeRendering() override;
+    virtual size_t primitiveCount() override;
 };
