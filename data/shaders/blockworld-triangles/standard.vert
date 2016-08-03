@@ -2,13 +2,13 @@
 
 uniform mat4 viewProjection;
 
-in vec3  in_vertex;
-in vec3  in_normal;
-in int in_type;
+in vec3 in_vertex;
+in vec3 in_normal;
+in int  in_type;
 
 flat out vec3 g_normal;
-flat out int g_type;
-out vec2 g_texCoord;
+flat out int  g_type;
+     out vec2 g_texCoord;
 
 void main()
 {

@@ -58,20 +58,20 @@ void BlockWorldInstancing::initializeVAO()
     static const auto POSITIVE_Z = glm::vec3(0.0, 0.0, 1.0);
 
     const auto vertices = std::array<glm::vec3, 14>{{
-        glm::vec3(-1.0f, 1.0f, -1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, -1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f, -1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f, -1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, -1.0f),
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, 1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, 1.0f),
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(-1.0f, -1.0f, 1.0f)
+        glm::vec3(-0.5f, 0.5f, -0.5f),
+        glm::vec3(-0.5f, 0.5f, 0.5f),
+        glm::vec3(0.5f, 0.5f, -0.5f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        glm::vec3(0.5f, -0.5f, 0.5f),
+        glm::vec3(-0.5f, 0.5f, 0.5f),
+        glm::vec3(-0.5f, -0.5f, 0.5f),
+        glm::vec3(-0.5f, 0.5f, -0.5f),
+        glm::vec3(-0.5f, -0.5f, -0.5f),
+        glm::vec3(0.5f, 0.5f, -0.5f),
+        glm::vec3(0.5f, -0.5f, -0.5f),
+        glm::vec3(0.5f, -0.5f, 0.5f),
+        glm::vec3(-0.5f, -0.5f, -0.5f),
+        glm::vec3(-0.5f, -0.5f, 0.5f)
     }};
 
     const auto normals = std::array<glm::vec3, 14>{{
@@ -146,6 +146,10 @@ bool BlockWorldInstancing::loadShader()
     {
         return false;
     }
+
+    glUseProgram(m_program);
+    glUniform1f(glGetUniformLocation(m_program, "blockSize"), m_blockSize);
+    glUseProgram(0);
 
     glBindFragDataLocation(m_program, 0, "out_color");
 

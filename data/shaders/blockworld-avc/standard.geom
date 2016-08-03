@@ -72,6 +72,9 @@ void generateClosedCuboid(in vec3 center, in vec3 scale)
         emit(vertices[4], POSITIVE_X, vec2(0.0, 0.0)); // L
     }
     
+    emit(vertices[6], NEGATIVE_Y, vec2(0.0, 0.0)); // I
+    emit(vertices[5], NEGATIVE_Y, vec2(0.0, 0.0)); // G
+    
     EndPrimitive();
 }
 

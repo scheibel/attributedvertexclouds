@@ -106,6 +106,10 @@ bool BlockWorldVertexCloud::loadShader()
         return false;
     }
 
+    glUseProgram(m_program);
+    glUniform1f(glGetUniformLocation(m_program, "blockSize"), m_blockSize);
+    glUseProgram(0);
+
     glBindFragDataLocation(m_program, 0, "out_color");
 
     return true;

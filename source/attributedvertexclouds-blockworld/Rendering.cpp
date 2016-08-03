@@ -96,7 +96,7 @@ void Rendering::createGeometry()
     for (auto implementation : m_implementations)
     {
         implementation->resize(blockCount);
-        implementation->setBlockSize(worldScale.x);
+        implementation->setBlockSize(worldScale.x / 2.0f);
     }
 
     std::array<std::vector<float>, 4> noise;
@@ -108,11 +108,11 @@ void Rendering::createGeometry()
 #pragma omp parallel for
     for (size_t i = 0; i < blockCount; ++i)
     {
-        const auto position = glm::ivec3(i % blockGridSize, (i / blockGridSize) % blockGridSize, i / blockGridSize / blockGridSize);
+        const auto position = glm::ivec3(i % blockGridSize, (i / blockGridSize) % blockGridSize, i / blockGridSize / blockGridSize) - glm::ivec3(blockGridSize / 2, blockGridSize / 2, blockGridSize / 2);
 
         Block b;
         b.position = position;
-        b.type = static_cast<int>(noise[0][i]);
+        b.type = static_cast<int>(glm::round(4 * glm::pow(noise[0][i], 2.0f)));
 
         for (auto implementation : m_implementations)
         {

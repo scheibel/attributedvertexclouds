@@ -28,7 +28,13 @@ out vec3 out_color;
 
 void main()
 {
-    vec3 terrainColor = texture(terrain, vec3(g_texCoord, g_type)).rgb;
+    if (g_type <= 0)
+    {
+        discard;
+        return;
+    }
+    
+    vec3 terrainColor = texture(terrain, vec3(g_texCoord, g_type-1)).rgb;
     vec3 col = vec3(0.0);
     vec3 N = normalize(g_normal);
 

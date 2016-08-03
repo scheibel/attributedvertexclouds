@@ -76,7 +76,7 @@ bool BlockWorldTriangleStrip::loadShader()
 
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
 
-    const auto fragmentShaderSource = textFromFile("data/shaders/visualization.frag");
+    const auto fragmentShaderSource = textFromFile("data/shaders/blockworld.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
     if(fragmentShaderSource_ptr)
         glShaderSource(m_fragmentShader, 1, &fragmentShaderSource_ptr, 0);
