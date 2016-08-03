@@ -22,6 +22,7 @@ public:
     void setTechnique(int i);
     void togglePerformanceMeasurements();
     void toggleRasterizerDiscard();
+    void togglePostprocessing();
     void spaceMeasurement();
     void reloadShaders();
     void startFPSMeasuring();
@@ -36,11 +37,22 @@ protected:
     gl::GLuint m_query;
     gl::GLuint m_gradientTexture;
 
+    gl::GLuint m_fbo;
+    gl::GLuint m_colorBuffer;
+    gl::GLuint m_depthBuffer;
+
+    gl::GLuint m_postprocessingVertices;
+    gl::GLuint m_postprocessingVAO;
+    gl::GLuint m_postProcessingProgram;
+    gl::GLuint m_postProcessingVertexShader;
+    gl::GLuint m_postProcessingFragmentShader;
+
     int m_width;
     int m_height;
 
     std::chrono::high_resolution_clock::time_point m_start;
 
+    bool m_usePostprocessing;
     bool m_measure;
     bool m_rasterizerDiscard;
 
@@ -48,4 +60,5 @@ protected:
     std::chrono::high_resolution_clock::time_point m_fpsMeasurementStart;
 
     void updateUniforms();
+    bool loadShader();
 };
