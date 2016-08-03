@@ -34,16 +34,11 @@ void BlockWorldVertexCloud::onInitialize()
     m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    m_programs.resize(2);
-    m_programs[0] = glCreateProgram();
-    m_programs[1] = glCreateProgram();
+    m_program = glCreateProgram();
 
-    glAttachShader(m_programs[0], m_vertexShader);
-    glAttachShader(m_programs[0], m_geometryShader);
-    glAttachShader(m_programs[0], m_fragmentShader);
-
-    glAttachShader(m_programs[1], m_vertexShader);
-    glAttachShader(m_programs[1], m_geometryShader);
+    glAttachShader(m_program, m_vertexShader);
+    glAttachShader(m_program, m_geometryShader);
+    glAttachShader(m_program, m_fragmentShader);
 
     loadShader();
 }
@@ -102,20 +97,16 @@ bool BlockWorldVertexCloud::loadShader()
         return false;
     }
 
-    glLinkProgram(m_programs[0]);
+    glLinkProgram(m_program);
 
-    success &= checkForLinkerError(m_programs[0], "program");
-
-    glLinkProgram(m_programs[1]);
-
-    success &= checkForLinkerError(m_programs[1], "depth only program");
+    success &= checkForLinkerError(m_program, "program");
 
     if (!success)
     {
         return false;
     }
 
-    glBindFragDataLocation(m_programs[0], 0, "out_color");
+    glBindFragDataLocation(m_program, 0, "out_color");
 
     return true;
 }
@@ -178,17 +169,7 @@ void BlockWorldVertexCloud::onRender()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_TRUE);
 
-    // Pre-Z Pass
-    //glDepthFunc(GL_LEQUAL);
-    //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    //glUseProgram(m_programs[1]);
-    //glDrawArrays(GL_POINTS, 0, size());
-
-    // Color Pass
-
-    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    //glDepthMask(GL_FALSE);
-    glUseProgram(m_programs[0]);
+    glUseProgram(m_program);
     glDrawArrays(GL_POINTS, 0, size());
 
     glUseProgram(0);
@@ -196,7 +177,7 @@ void BlockWorldVertexCloud::onRender()
     glBindVertexArray(0);
 }
 
-const std::vector<gl::GLuint> & BlockWorldVertexCloud::programs() const
+gl::GLuint BlockWorldVertexCloud::program() const
 {
-    return m_programs;
+    return m_program;
 }

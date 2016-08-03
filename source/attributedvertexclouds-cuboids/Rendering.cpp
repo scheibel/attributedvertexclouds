@@ -132,12 +132,10 @@ void Rendering::updateUniforms()
     {
         if (implementation->initialized())
         {
-            for (GLuint program : implementation->programs())
-            {
-                const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-                glUseProgram(program);
-                glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
-            }
+            GLuint program = implementation->program();
+            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+            glUseProgram(program);
+            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
         }
     }
 

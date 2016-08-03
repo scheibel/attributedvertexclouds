@@ -41,7 +41,7 @@ public:
 
     virtual void resize(size_t count) = 0;
 
-    virtual const std::vector<gl::GLuint> & programs() const = 0;
+    virtual gl::GLuint program() const = 0;
 public:
     std::string m_name;
     bool m_initialized;

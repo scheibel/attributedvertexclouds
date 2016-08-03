@@ -50,16 +50,11 @@ void PrismaVertexCloud::onInitialize()
     m_geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    m_programs.resize(2);
-    m_programs[0] = glCreateProgram();
-    m_programs[1] = glCreateProgram();
+    m_program = glCreateProgram();
 
-    glAttachShader(m_programs[0], m_vertexShader);
-    glAttachShader(m_programs[0], m_geometryShader);
-    glAttachShader(m_programs[0], m_fragmentShader);
-
-    glAttachShader(m_programs[1], m_vertexShader);
-    glAttachShader(m_programs[1], m_geometryShader);
+    glAttachShader(m_program, m_vertexShader);
+    glAttachShader(m_program, m_geometryShader);
+    glAttachShader(m_program, m_fragmentShader);
 
     loadShader();
 }
@@ -155,20 +150,16 @@ bool PrismaVertexCloud::loadShader()
         return false;
     }
 
-    glLinkProgram(m_programs[0]);
+    glLinkProgram(m_program);
 
-    success &= checkForLinkerError(m_programs[0], "program");
-
-    glLinkProgram(m_programs[1]);
-
-    success &= checkForLinkerError(m_programs[1], "depth only program");
+    success &= checkForLinkerError(m_program, "program");
 
     if (!success)
     {
         return false;
     }
 
-    glBindFragDataLocation(m_programs[0], 0, "out_color");
+    glBindFragDataLocation(m_program, 0, "out_color");
 
     return true;
 }
@@ -265,23 +256,9 @@ void PrismaVertexCloud::onRender()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_TRUE);
 
-    // Pre-Z Pass
-    //glDepthFunc(GL_LEQUAL);
-    //glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    //glUseProgram(m_programs[1]);
-    //const auto centerAndHeightsLocation = glGetUniformLocation(m_programs[1], "centerAndHeights");
-    //const auto colorAndGradientsLocation = glGetUniformLocation(m_programs[1], "colorAndGradients");
-    //glUniform1i(centerAndHeightsLocation, 0);
-    //glUniform1i(colorAndGradientsLocation, 1);
-    //glDrawArrays(GL_POINTS, 0, size()-1);
-
-    // Color Pass
-
-    //glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    //glDepthMask(GL_FALSE);
-    glUseProgram(m_programs[0]);
-    const auto centerAndHeightsLocation = glGetUniformLocation(m_programs[0], "centerAndHeights");
-    const auto colorAndGradientsLocation = glGetUniformLocation(m_programs[0], "colorAndGradients");
+    glUseProgram(m_program);
+    const auto centerAndHeightsLocation = glGetUniformLocation(m_program, "centerAndHeights");
+    const auto colorAndGradientsLocation = glGetUniformLocation(m_program, "colorAndGradients");
     glUniform1i(centerAndHeightsLocation, 0);
     glUniform1i(colorAndGradientsLocation, 1);
     glDrawArrays(GL_POINTS, 0, size()-1);
@@ -291,7 +268,7 @@ void PrismaVertexCloud::onRender()
     glBindVertexArray(0);
 }
 
-const std::vector<gl::GLuint> & PrismaVertexCloud::programs() const
+gl::GLuint PrismaVertexCloud::program() const
 {
-    return m_programs;
+    return m_program;
 }

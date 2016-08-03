@@ -33,7 +33,7 @@ public:
 
     virtual void resize(size_t count) override;
 
-    virtual const std::vector<gl::GLuint> & programs() const override;
+    virtual gl::GLuint program() const override;
 public:
     std::vector<glm::vec3> m_vertex;
     std::vector<glm::vec3> m_normal;
@@ -45,7 +45,7 @@ public:
     gl::GLuint m_vertexShader;
     gl::GLuint m_fragmentShader;
 
-    std::vector<gl::GLuint> m_programs;
+    gl::GLuint m_program;
 
     void initializeVAO();
     size_t verticesPerCuboid() const;
