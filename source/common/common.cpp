@@ -141,6 +141,7 @@ glm::vec3 cameraPath(const glm::vec3 & eye, float f)
 
     eyeRotation = glm::rotate(eyeRotation, 0.1f * f, glm::vec3(0.0f, 1.0f, 0.0f));
     eyeRotation = glm::rotate(eyeRotation, glm::cos(0.14583f * f), glm::vec3(0.0f, 0.0f, 1.0f));
+    eyeRotation = glm::scale(eyeRotation, glm::vec3(0.75f + 0.25f * glm::cos(0.353478534f * f)));
 
     return glm::vec3(eyeRotation * glm::vec4(eye, 1.0f));
 }

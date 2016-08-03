@@ -29,7 +29,7 @@ static const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
 static const auto arcTessellationCount = size_t(128);
 static const auto fpsSampleCount = size_t(100);
 
-static const auto worldScale = glm::vec3(1.3f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
+static const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
 static const auto gridOffset = 0.2f;
 
 } // namespace
@@ -90,7 +90,7 @@ void Rendering::createGeometry()
     std::array<std::vector<float>, 7> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
     }
 
 //#pragma omp parallel for
@@ -136,7 +136,7 @@ void Rendering::updateUniforms()
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
 
     const auto view = glm::lookAt(cameraPath(eye, f), center, up);
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.2f, 3.0f) * view;
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.05f, 2.0f) * view;
 
     for (auto implementation : m_implementations)
     {

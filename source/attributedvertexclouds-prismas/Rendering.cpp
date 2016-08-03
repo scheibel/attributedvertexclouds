@@ -28,7 +28,7 @@ static const auto prismaGridSize = size_t(48);
 static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
 static const auto fpsSampleCount = size_t(100);
 
-static const auto worldScale = glm::vec3(1.3f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
+static const auto worldScale = glm::vec3(1.0f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
 static const auto gridOffset = 0.2f;
 
 } // namespace
@@ -89,7 +89,7 @@ void Rendering::createGeometry()
     std::array<std::vector<float>, 4> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-48-"+std::to_string(i)+".raw");
     }
 
 #pragma omp parallel for
@@ -107,7 +107,7 @@ void Rendering::createGeometry()
         p.heightRange.x = -0.5f + (position.y + offset.y) * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
         p.heightRange.y = -0.5f + (position.y + offset.y) * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
 
-        const auto vertexCount = size_t(12) + size_t(glm::ceil(12.0f * 0.5f * (noise[1][i] + 1.0f)));
+        const auto vertexCount = size_t(3) + size_t(glm::ceil(12.0f * noise[1][i]));
         const auto center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
         const auto radius = 0.5f * 0.5f * (noise[2][i] + 1.0f);
 
@@ -136,14 +136,14 @@ void Rendering::createGeometry()
 
 void Rendering::updateUniforms()
 {
-    static const auto eye = glm::vec3(1.0f, 1.5f, 1.0f);
+    static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
     static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
     static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
 
     const auto view = glm::lookAt(cameraPath(eye, f), center, up);
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.2f, 3.0f) * view;
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.05f, 2.0f) * view;
 
     for (auto implementation : m_implementations)
     {

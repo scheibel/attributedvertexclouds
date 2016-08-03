@@ -48,7 +48,7 @@ void main()
     
     vec3 col = vec3(0.0);
     vec3 N = normalize(g_normal);
-    vec2 texCoord = extract(g_localCoord, N) * 0.5 + 0.5;
+    vec2 texCoord = extract(g_localCoord, N) * 0.1 + 0.1;
     vec3 terrainColor = texture(terrain, vec3(texCoord, g_type-1)).rgb;
 
     for (int i = 0; i < 6; ++i)

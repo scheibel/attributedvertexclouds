@@ -31,7 +31,7 @@ int main(int /*argc*/, char ** /*argv*/)
         glkernel::noise::gradient(kernel, glkernel::noise::GradientNoiseType::Simplex);
         //glkernel::scale::range(kernel, 0.0f, 1.0f, -1.0f, 1.0f);
 
-        std::fstream file("data/noise/noise-"+std::to_string(i)+".raw", std::fstream::out | std::fstream::binary);
+        std::fstream file("data/noise/noise-"+std::to_string(gridSize)+"-"+std::to_string(i)+".raw", std::fstream::out | std::fstream::binary);
 
         file.write(reinterpret_cast<char *>(kernel.data()), sizeof(float) * kernel.size());
         file.close();
