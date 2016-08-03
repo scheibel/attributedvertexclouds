@@ -31,6 +31,11 @@ PrismaVertexCloud::~PrismaVertexCloud()
 
     glDeleteTextures(1, &m_centerHeightRangeTexture);
     glDeleteTextures(1, &m_colorValueGradientIndexTexture);
+
+    glDeleteShader(m_vertexShader);
+    glDeleteShader(m_geometryShader);
+    glDeleteShader(m_fragmentShader);
+    glDeleteProgram(m_program);
 }
 
 void PrismaVertexCloud::onInitialize()

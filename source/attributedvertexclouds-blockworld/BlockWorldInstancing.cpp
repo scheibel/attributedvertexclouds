@@ -23,6 +23,9 @@ BlockWorldInstancing::~BlockWorldInstancing()
     glDeleteBuffers(1, &m_vertices);
     glDeleteBuffers(1, &m_attributes);
     glDeleteVertexArrays(1, &m_vao);
+    glDeleteShader(m_vertexShader);
+    glDeleteShader(m_fragmentShader);
+    glDeleteProgram(m_program);
 }
 
 void BlockWorldInstancing::onInitialize()

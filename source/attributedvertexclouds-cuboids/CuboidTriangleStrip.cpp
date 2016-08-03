@@ -22,6 +22,9 @@ CuboidTriangleStrip::~CuboidTriangleStrip()
 {
     glDeleteBuffers(1, &m_vertices);
     glDeleteVertexArrays(1, &m_vao);
+    glDeleteShader(m_vertexShader);
+    glDeleteShader(m_fragmentShader);
+    glDeleteProgram(m_program);
 }
 
 void CuboidTriangleStrip::onInitialize()

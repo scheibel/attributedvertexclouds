@@ -23,6 +23,12 @@ ArcVertexCloud::~ArcVertexCloud()
 {
     glDeleteBuffers(1, &m_vertices);
     glDeleteVertexArrays(1, &m_vao);
+    glDeleteShader(m_vertexShader);
+    glDeleteShader(m_tessControlShader);
+    glDeleteShader(m_tessEvaluationShader);
+    glDeleteShader(m_geometryShader);
+    glDeleteShader(m_fragmentShader);
+    glDeleteProgram(m_program);
 }
 
 void ArcVertexCloud::onInitialize()
