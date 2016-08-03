@@ -138,16 +138,10 @@ void Rendering::updateUniforms()
     const auto view = glm::lookAt(cameraPath(eye, f), center, up);
     const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.05f, 2.0f) * view;
 
-    for (auto implementation : m_implementations)
-    {
-        if (implementation->initialized())
-        {
-            GLuint program = implementation->program();
-            const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
-            glUseProgram(program);
-            glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
-        }
-    }
+    GLuint program = m_current->program();
+    const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+    glUseProgram(program);
+    glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
 
     glUseProgram(0);
 }
