@@ -51,15 +51,18 @@ void BlockWorldTriangleStrip::initializeVAO()
 
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 3, m_vertex.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 3, verticesCount() * sizeof(float) * 3, m_normal.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_type.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 3, m_localCoords.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 9, verticesCount() * sizeof(float) * 1, m_type.data());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
-    glVertexAttribIPointer(2, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 9));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -129,35 +132,36 @@ void BlockWorldTriangleStrip::setBlock(size_t index, const Block & block)
     }};
 
     size_t i = 0;
-    const auto emitVertex = [this, index, &block, &i](const glm::vec3 & vertex, const glm::vec3 & normal)
+    const auto emitVertex = [this, index, &block, &i](const glm::vec3 & vertex, const glm::vec3 & normal, const glm::vec3 & localCoord)
     {
         m_vertex[index * verticesPerCuboid() + i] = vertex;
         m_normal[index * verticesPerCuboid() + i] = normal;
+        m_localCoords[index * verticesPerCuboid() + i] = localCoord;
         m_type[index * verticesPerCuboid() + i] = block.type;
 
         ++i;
     };
 
-    emitVertex(vertices[0], POSITIVE_Y); // A
-    emitVertex(vertices[1], POSITIVE_Y); // B
-    emitVertex(vertices[2], POSITIVE_Y); // C
-    emitVertex(vertices[3], POSITIVE_Y); // D
+    emitVertex(vertices[0], POSITIVE_Y, glm::vec3(-1.0, 1.0, -1.0)); // A
+    emitVertex(vertices[1], POSITIVE_Y, glm::vec3(-1.0, 1.0, 1.0)); // B
+    emitVertex(vertices[2], POSITIVE_Y, glm::vec3(1.0, 1.0, -1.0)); // C
+    emitVertex(vertices[3], POSITIVE_Y, glm::vec3(1.0, 1.0, 1.0)); // D
 
-    emitVertex(vertices[4], POSITIVE_X); // E
+    emitVertex(vertices[4], POSITIVE_X, glm::vec3(1.0, -1.0, 1.0)); // E
 
-    emitVertex(vertices[1], POSITIVE_Z); // F
-    emitVertex(vertices[5], POSITIVE_Z); // G
+    emitVertex(vertices[1], POSITIVE_Z, glm::vec3(-1.0, 1.0, 1.0)); // F
+    emitVertex(vertices[5], POSITIVE_Z, glm::vec3(-1.0, -1.0, 1.0)); // G
 
-    emitVertex(vertices[0], NEGATIVE_X); // H
-    emitVertex(vertices[6], NEGATIVE_X); // I
+    emitVertex(vertices[0], NEGATIVE_X, glm::vec3(-1.0, 1.0, -1.0)); // H
+    emitVertex(vertices[6], NEGATIVE_X, glm::vec3(-1.0, -1.0, -1.0)); // I
 
-    emitVertex(vertices[2], NEGATIVE_Z); // J
-    emitVertex(vertices[7], NEGATIVE_Z); // K
+    emitVertex(vertices[2], NEGATIVE_Z, glm::vec3(1.0, 1.0, -1.0)); // J
+    emitVertex(vertices[7], NEGATIVE_Z, glm::vec3(1.0, -1.0, -1.0)); // K
 
-    emitVertex(vertices[4], POSITIVE_X); // L
+    emitVertex(vertices[4], POSITIVE_X, glm::vec3(1.0, -1.0, 1.0)); // L
 
-    emitVertex(vertices[6], NEGATIVE_Y); // I
-    emitVertex(vertices[5], NEGATIVE_Y); // G
+    emitVertex(vertices[6], NEGATIVE_Y, glm::vec3(-1.0, -1.0, -1.0)); // I
+    emitVertex(vertices[5], NEGATIVE_Y, glm::vec3(-1.0, -1.0, 1.0)); // G
 }
 
 size_t BlockWorldTriangleStrip::size() const
@@ -192,13 +196,14 @@ size_t BlockWorldTriangleStrip::vertexByteSize() const
 
 size_t BlockWorldTriangleStrip::componentCount() const
 {
-    return 7;
+    return 10;
 }
 
 void BlockWorldTriangleStrip::resize(size_t count)
 {
     m_vertex.resize(count * verticesPerCuboid());
     m_normal.resize(count * verticesPerCuboid());
+    m_localCoords.resize(count * verticesPerCuboid());
     m_type.resize(count * verticesPerCuboid());
 
     m_multiStarts.resize(count);

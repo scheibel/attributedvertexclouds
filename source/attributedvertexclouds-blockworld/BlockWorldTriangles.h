@@ -37,6 +37,7 @@ public:
 public:
     std::vector<glm::vec3> m_vertex;
     std::vector<glm::vec3> m_normal;
+    std::vector<glm::vec3> m_localCoords;
     std::vector<int> m_type;
 
     gl::GLuint m_vertices;

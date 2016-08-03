@@ -9,8 +9,8 @@ in ivec4 in_positionAndType;
 uniform float blockSize;
 
 flat out vec3 g_normal;
-flat out int g_type;
-out vec2 g_texCoord;
+flat out int  g_type;
+     out vec3 g_localCoord;
 
 uniform int fix = 1;
 
@@ -20,5 +20,5 @@ void main()
     
     g_normal = in_normal;
     g_type = in_positionAndType.w;
-    g_texCoord = vec2(0.0, 0.0);
+    g_localCoord = in_vertex * 2.0;
 }

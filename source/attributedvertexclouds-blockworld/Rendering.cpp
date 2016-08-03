@@ -67,13 +67,15 @@ void Rendering::initialize()
     glGenTextures(1, &m_terrainTexture);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR_MIPMAP_LINEAR));
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(GL_LINEAR));
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, static_cast<GLint>(GL_MIRRORED_REPEAT));
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, static_cast<GLint>(GL_MIRRORED_REPEAT));
 
     auto terrainData = rawFromFile("data/textures/terrain.512.2048.rgba.ub.raw");
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, static_cast<GLint>(GL_RGBA8), 512, 512, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, terrainData.data());
+
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glGenQueries(1, &m_query);
 
@@ -99,7 +101,7 @@ void Rendering::createGeometry()
         implementation->setBlockSize(worldScale.x / 2.0f);
     }
 
-    std::array<std::vector<float>, 4> noise;
+    std::array<std::vector<float>, 1> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
         noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");

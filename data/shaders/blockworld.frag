@@ -2,7 +2,7 @@
 
 flat in vec3 g_normal;
 flat in int g_type;
-in vec2 g_texCoord;
+in vec3 g_localCoord;
 
 uniform sampler2DArray terrain;
 
@@ -26,6 +26,18 @@ uniform float lightStrengths[6] = float[](
 
 out vec3 out_color;
 
+vec2 extract(in vec3 coords, in vec3 mask)
+{
+    return mix(mix(
+            coords.xy,
+            coords.xz,
+            float(abs(mask.y) > 0.5)
+        ),
+        coords.yz,
+        float(abs(mask.x) > 0.5)
+    );
+}
+
 void main()
 {
     if (g_type <= 0)
@@ -34,9 +46,10 @@ void main()
         return;
     }
     
-    vec3 terrainColor = texture(terrain, vec3(g_texCoord, g_type-1)).rgb;
     vec3 col = vec3(0.0);
     vec3 N = normalize(g_normal);
+    vec2 texCoord = extract(g_localCoord, N) * 0.5 + 0.5;
+    vec3 terrainColor = texture(terrain, vec3(texCoord, g_type-1)).rgb;
 
     for (int i = 0; i < 6; ++i)
     {
@@ -47,4 +60,5 @@ void main()
     }
     
     out_color = col;
+    //out_color = N * 0.5 + 0.5;
 }

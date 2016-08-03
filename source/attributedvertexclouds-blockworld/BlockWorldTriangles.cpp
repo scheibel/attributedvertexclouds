@@ -51,15 +51,18 @@ void BlockWorldTriangles::initializeVAO()
 
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 3, m_vertex.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 3, verticesCount() * sizeof(float) * 3, m_normal.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_type.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 3, m_localCoords.data());
+    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 9, verticesCount() * sizeof(float) * 1, m_type.data());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
-    glVertexAttribIPointer(2, 1, GL_INT, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 9));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -197,6 +200,7 @@ void BlockWorldTriangles::setBlock(size_t index, const Block & block)
 
     for (auto i = 0ull; i < verticesPerCuboid(); ++i)
     {
+        m_localCoords[verticesPerCuboid() * index + i] = m_vertex[verticesPerCuboid() * index + i] * 2.0f;
         m_vertex[verticesPerCuboid() * index + i] = (glm::vec3(block.position) + m_vertex[verticesPerCuboid() * index + i]) * m_blockSize;
         m_type[verticesPerCuboid() * index + i] = block.type;
     }
@@ -234,13 +238,14 @@ size_t BlockWorldTriangles::vertexByteSize() const
 
 size_t BlockWorldTriangles::componentCount() const
 {
-    return 7;
+    return 10;
 }
 
 void BlockWorldTriangles::resize(size_t count)
 {
     m_vertex.resize(count * verticesPerCuboid());
     m_normal.resize(count * verticesPerCuboid());
+    m_localCoords.resize(count * verticesPerCuboid());
     m_type.resize(count * verticesPerCuboid());
 }
 
