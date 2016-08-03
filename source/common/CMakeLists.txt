@@ -28,12 +28,16 @@ set(headers
     ${include_path}/common.h
     
     ${include_path}/Postprocessing.h
+    ${include_path}/Rendering.h
+    ${include_path}/Implementation.h
 )
 
 set(sources
     ${source_path}/common.cpp
 
     ${source_path}/Postprocessing.cpp
+    ${source_path}/Rendering.cpp
+    ${source_path}/Implementation.cpp
 )
 
 # Group source files

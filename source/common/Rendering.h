@@ -1,10 +1,11 @@
 
 #include <chrono>
+#include <vector>
 
 #include <glbinding/gl/types.h>
 
 
-class CuboidImplementation;
+class Implementation;
 class Postprocessing;
 
 
@@ -12,7 +13,9 @@ class Rendering
 {
 public:
     Rendering();
-    ~Rendering();
+    virtual ~Rendering();
+
+    void addImplementation(Implementation * implementation);
 
     void initialize();
     void createGeometry();
@@ -31,12 +34,11 @@ public:
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
-    CuboidImplementation * m_current;
+    Implementation * m_current;
     Postprocessing * m_postprocessing;
-    std::array<CuboidImplementation *, 4> m_implementations;
+    std::vector<Implementation *> m_implementations;
 
     gl::GLuint m_query;
-    gl::GLuint m_gradientTexture;
 
     int m_width;
     int m_height;
@@ -49,5 +51,14 @@ protected:
     size_t m_fpsSamples;
     std::chrono::high_resolution_clock::time_point m_fpsMeasurementStart;
 
-    void updateUniforms();
+    void prepareRendering();
+    void finalizeRendering();
+
+    // Subclass interface
+
+    virtual void oninitialize() = 0;
+    virtual void onCreateGeometry() = 0;
+    virtual void onPrepareRendering() = 0;
+    virtual void onFinalizeRendering() = 0;
+    virtual size_t primitiveCount() = 0;
 };
