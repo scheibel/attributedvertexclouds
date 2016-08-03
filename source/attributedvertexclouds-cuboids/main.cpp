@@ -52,11 +52,6 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         rendering.startFPSMeasuring();
     }
 
-    if (key == GLFW_KEY_M && action == GLFW_RELEASE)
-    {
-        rendering.togglePerformanceMeasurements();
-    }
-
     if (key == GLFW_KEY_R && action == GLFW_RELEASE)
     {
         rendering.toggleRasterizerDiscard();

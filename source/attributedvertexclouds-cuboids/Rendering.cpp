@@ -48,7 +48,6 @@ Rendering::Rendering()
 , m_query(0)
 , m_gradientTexture(0)
 , m_usePostprocessing(false)
-, m_measure(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
@@ -253,9 +252,7 @@ void Rendering::render()
         glEnable(GL_RASTERIZER_DISCARD);
     }
 
-    measureGPU("rendering", [this]() {
-        m_current->render();
-    }, m_measure);
+    m_current->render();
 
     if (m_rasterizerDiscard)
     {
@@ -335,11 +332,6 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     glGetQueryObjectiv(m_query, gl::GL_QUERY_RESULT, &value);
 
     std::cout << name << ": " << value << "ns" << std::endl;
-}
-
-void Rendering::togglePerformanceMeasurements()
-{
-    m_measure = !m_measure;
 }
 
 void Rendering::toggleRasterizerDiscard()

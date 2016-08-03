@@ -52,17 +52,12 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         rendering.startFPSMeasuring();
     }
 
-    if (key == GLFW_KEY_M && action == GLFW_RELEASE)
-    {
-        rendering.togglePerformanceMeasurements();
-    }
-
     if (key == GLFW_KEY_R && action == GLFW_RELEASE)
     {
         rendering.toggleRasterizerDiscard();
     }
 
-    if (key == GLFW_KEY_P && action == GLFW_RELEASE)
+    if (key == GLFW_KEY_F7 && action == GLFW_RELEASE)
     {
         rendering.spaceMeasurement();
     }
@@ -100,8 +95,8 @@ int main(int /*argc*/, char ** /*argv*/)
     std::cout << " [4] Attributed Vertex Cloud" << std::endl;
     std::cout << std::endl;
     std::cout << "Measuring" << std::endl;
-    std::cout << " [p] Start/Stop Performance Measurements" << std::endl;
-    std::cout << " [m] Print Memory Measurements" << std::endl;
+    std::cout << " [F6] Performance Measurement" << std::endl;
+    std::cout << " [F7] Memory Comparison" << std::endl;
     std::cout << std::endl;
     std::cout << "Debugging" << std::endl;
     std::cout << " [r] Enable/Disable rasterizer" << std::endl;

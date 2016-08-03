@@ -42,7 +42,6 @@ Rendering::Rendering()
 , m_blockThreshold(7)
 , m_width(0)
 , m_height(0)
-, m_measure(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
@@ -223,9 +222,7 @@ void Rendering::render()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
 
-    measureGPU("rendering", [this]() {
-        m_current->render();
-    }, m_measure);
+    m_current->render();
 
     if (m_rasterizerDiscard)
     {
@@ -298,11 +295,6 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     glGetQueryObjectiv(m_query, gl::GL_QUERY_RESULT, &value);
 
     std::cout << name << ": " << value << "ns" << std::endl;
-}
-
-void Rendering::togglePerformanceMeasurements()
-{
-    m_measure = !m_measure;
 }
 
 void Rendering::toggleRasterizerDiscard()

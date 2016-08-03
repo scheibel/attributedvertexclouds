@@ -20,7 +20,6 @@ public:
     void render();
 
     void setTechnique(int i);
-    void togglePerformanceMeasurements();
     void toggleRasterizerDiscard();
     void spaceMeasurement();
     void reloadShaders();
@@ -41,7 +40,6 @@ protected:
 
     std::chrono::high_resolution_clock::time_point m_start;
 
-    bool m_measure;
     bool m_rasterizerDiscard;
 
     size_t m_fpsSamples;

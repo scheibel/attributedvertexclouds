@@ -19,7 +19,6 @@ public:
     void resize(int w, int h);
     void render();
 
-    void togglePerformanceMeasurements();
     void toggleRasterizerDiscard();
     void reloadShaders();
     void startFPSMeasuring();
@@ -38,7 +37,6 @@ protected:
 
     std::chrono::high_resolution_clock::time_point m_start;
 
-    bool m_measure;
     bool m_rasterizerDiscard;
 
     size_t m_fpsSamples;
