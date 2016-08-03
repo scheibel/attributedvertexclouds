@@ -132,7 +132,6 @@ void Rendering::createGeometry()
         c.center = glm::vec3(-0.5f, -0.5f, -0.5f) + (glm::vec3(position) + offset) * worldScale;
         c.extent = glm::mix(glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(noise[0][i], noise[1][i], noise[2][i])) * worldScale;
         c.colorValue = glm::mix(0.0f, 1.0f, noise[3][i]);
-        c.gradientIndex = 0;
 
         for (auto implementation : m_implementations)
         {

@@ -106,22 +106,18 @@ void CuboidInstancing::initializeVAO()
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 3, m_position.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 3, verticesCount() * sizeof(float) * 3, m_scale.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_colorValue.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 7, verticesCount() * sizeof(float) * 1, m_gradientIndex.data());
 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
     glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
-    glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 7));
 
     glVertexAttribDivisor(2, 1);
     glVertexAttribDivisor(3, 1);
     glVertexAttribDivisor(4, 1);
-    glVertexAttribDivisor(5, 1);
 
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
-    glEnableVertexAttribArray(5);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -172,7 +168,6 @@ void CuboidInstancing::setCube(size_t index, const Cuboid & cuboid)
     m_position[index] = cuboid.center;
     m_scale[index] = cuboid.extent / glm::vec3(2.0f);
     m_colorValue[index] = cuboid.colorValue;
-    m_gradientIndex[index] = cuboid.gradientIndex;
 }
 
 size_t CuboidInstancing::size() const
@@ -207,7 +202,7 @@ size_t CuboidInstancing::vertexByteSize() const
 
 size_t CuboidInstancing::componentCount() const
 {
-    return 8;
+    return 7;
 }
 
 void CuboidInstancing::resize(size_t count)
@@ -215,7 +210,6 @@ void CuboidInstancing::resize(size_t count)
     m_position.resize(count * verticesPerCuboid());
     m_scale.resize(count * verticesPerCuboid());
     m_colorValue.resize(count * verticesPerCuboid());
-    m_gradientIndex.resize(count * verticesPerCuboid());
 }
 
 void CuboidInstancing::onRender()

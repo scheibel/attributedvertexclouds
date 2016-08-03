@@ -13,5 +13,4 @@ public:
     std::vector<glm::vec2> points;
     glm::vec2 heightRange;
     float colorValue;
-    int gradientIndex;
 };

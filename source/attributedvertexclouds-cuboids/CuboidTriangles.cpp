@@ -55,17 +55,14 @@ void CuboidTriangles::initializeVAO()
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 0, verticesCount() * sizeof(float) * 3, m_vertex.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 3, verticesCount() * sizeof(float) * 3, m_normal.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_colorValue.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 7, verticesCount() * sizeof(float) * 1, m_gradientIndex.data());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 3));
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
-    glVertexAttribIPointer(3, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 7));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -219,7 +216,6 @@ void CuboidTriangles::setCube(size_t index, const Cuboid & cuboid)
     {
         m_vertex[verticesPerCuboid() * index + i] = cuboid.center + cuboid.extent * m_vertex[verticesPerCuboid() * index + i];
         m_colorValue[verticesPerCuboid() * index + i] = cuboid.colorValue;
-        m_gradientIndex[verticesPerCuboid() * index + i] = cuboid.gradientIndex;
     }
 }
 
@@ -255,7 +251,7 @@ size_t CuboidTriangles::vertexByteSize() const
 
 size_t CuboidTriangles::componentCount() const
 {
-    return 8;
+    return 7;
 }
 
 void CuboidTriangles::resize(size_t count)
@@ -263,7 +259,6 @@ void CuboidTriangles::resize(size_t count)
     m_vertex.resize(count * verticesPerCuboid());
     m_normal.resize(count * verticesPerCuboid());
     m_colorValue.resize(count * verticesPerCuboid());
-    m_gradientIndex.resize(count * verticesPerCuboid());
 }
 
 void CuboidTriangles::onRender()

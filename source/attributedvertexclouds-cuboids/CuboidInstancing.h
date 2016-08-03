@@ -38,7 +38,6 @@ public:
     std::vector<glm::vec3> m_position;
     std::vector<glm::vec3> m_scale;
     std::vector<float> m_colorValue;
-    std::vector<int> m_gradientIndex;
 
     gl::GLuint m_vertices;
     gl::GLuint m_attributes;

@@ -151,7 +151,6 @@ void Rendering::createGeometry()
         }
 
         p.colorValue = noise[3][i];
-        p.gradientIndex = 0;
 
         for (auto implementation : m_implementations)
         {

@@ -9,7 +9,7 @@ const vec3 DOWN = vec3(0.0, -1.0, 0.0);
 uniform mat4 viewProjection;
 
 uniform samplerBuffer centerAndHeights;
-uniform samplerBuffer colorAndGradients;
+uniform samplerBuffer colorValues;
 
 uniform sampler1D gradient;
 
@@ -40,9 +40,9 @@ void main()
     }
     
     vec4 centerAndHeight = texelFetch(centerAndHeights, v_startIndex[0]).rgba;
-    vec2 colorAndGradient = texelFetch(colorAndGradients, v_startIndex[0]).rg;
+    float colorValue = texelFetch(colorValues, v_startIndex[0]).r;
     
-    vec3 color = texture(gradient, colorAndGradient.r).rgb;
+    vec3 color = texture(gradient, colorValue).rgb;
     
     vec3 cBottom = vec3(centerAndHeight.r, centerAndHeight.b, centerAndHeight.g);
     vec3 sBottom = vec3(v_start[0].x, centerAndHeight.b, v_start[0].y);

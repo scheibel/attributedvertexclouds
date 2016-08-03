@@ -40,7 +40,6 @@ public:
     std::vector<glm::vec2> m_angleRange;
     std::vector<glm::vec2> m_radiusRange;
     std::vector<float> m_colorValue;
-    std::vector<int> m_gradientIndex;
     std::vector<int> m_tessellationCount;
 
     gl::GLuint m_vertices;

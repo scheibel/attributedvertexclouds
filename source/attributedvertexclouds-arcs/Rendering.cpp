@@ -142,7 +142,6 @@ void Rendering::createGeometry()
         a.radiusRange.y = a.radiusRange.x + 0.5f * noise[4][i] * worldScale.x;
 
         a.colorValue = noise[5][i];
-        a.gradientIndex = 0;
 
         a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::mix(4.0f, 64.0f, noise[6][i]) / (2.0f * glm::pi<float>()));
 

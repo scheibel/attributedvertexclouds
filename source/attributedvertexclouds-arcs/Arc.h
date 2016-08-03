@@ -14,6 +14,5 @@ public:
     glm::vec2 angleRange;
     glm::vec2 radiusRange;
     float colorValue;
-    int gradientIndex;
     int tessellationCount;
 };

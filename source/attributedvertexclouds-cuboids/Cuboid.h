@@ -12,5 +12,4 @@ public:
     glm::vec3 center;
     glm::vec3 extent;
     float colorValue;
-    int gradientIndex;
 };

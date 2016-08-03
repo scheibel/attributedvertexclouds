@@ -39,16 +39,15 @@ public:
     std::vector<glm::vec2> m_center;
     std::vector<glm::vec2> m_heightRange;
     std::vector<float> m_colorValue;
-    std::vector<float> m_gradientIndex;
 
     std::vector<glm::vec2> m_positions;
     std::vector<int> m_prismaIndices;
 
     gl::GLuint m_vertices;
     gl::GLuint m_centerHeightRangeBuffer;
-    gl::GLuint m_colorValueGradientIndexBuffer;
+    gl::GLuint m_colorValueBuffer;
     gl::GLuint m_centerHeightRangeTexture;
-    gl::GLuint m_colorValueGradientIndexTexture;
+    gl::GLuint m_colorValueTexture;
 
     gl::GLuint m_vao;
 

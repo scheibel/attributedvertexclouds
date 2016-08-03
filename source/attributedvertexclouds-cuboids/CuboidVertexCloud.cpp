@@ -58,19 +58,16 @@ void CuboidVertexCloud::initializeVAO()
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 2, verticesCount() * sizeof(float) * 2, m_extent.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 4, verticesCount() * sizeof(float) * 2, m_heightRange.data());
     glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 6, verticesCount() * sizeof(float) * 1, m_colorValue.data());
-    glBufferSubData(GL_ARRAY_BUFFER, verticesCount() * sizeof(float) * 7, verticesCount() * sizeof(float) * 1, m_gradientIndex.data());
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 0));
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 2));
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 4));
     glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 6));
-    glVertexAttribIPointer(4, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(verticesCount() * sizeof(float) * 7));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
-    glEnableVertexAttribArray(4);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -133,7 +130,6 @@ void CuboidVertexCloud::setCube(size_t index, const Cuboid & cuboid)
     m_extent[index] = glm::vec2(cuboid.extent.x, cuboid.extent.z);
     m_heightRange[index] = glm::vec2(cuboid.center.y - cuboid.extent.y / 2.0f, cuboid.extent.y);
     m_colorValue[index] = cuboid.colorValue;
-    m_gradientIndex[index] = cuboid.gradientIndex;
 }
 
 size_t CuboidVertexCloud::size() const
@@ -168,7 +164,7 @@ size_t CuboidVertexCloud::vertexByteSize() const
 
 size_t CuboidVertexCloud::componentCount() const
 {
-    return 8;
+    return 7;
 }
 
 void CuboidVertexCloud::resize(size_t count)
@@ -177,7 +173,6 @@ void CuboidVertexCloud::resize(size_t count)
     m_extent.resize(count);
     m_heightRange.resize(count);
     m_colorValue.resize(count);
-    m_gradientIndex.resize(count);
 }
 
 void CuboidVertexCloud::onRender()

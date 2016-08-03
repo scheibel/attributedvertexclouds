@@ -38,7 +38,6 @@ public:
     std::vector<glm::vec3> m_vertex;
     std::vector<glm::vec3> m_normal;
     std::vector<float> m_colorValue;
-    std::vector<int> m_gradientIndex;
 
     std::vector<gl::GLint> m_multiStarts;
     std::vector<gl::GLint> m_multiCounts;

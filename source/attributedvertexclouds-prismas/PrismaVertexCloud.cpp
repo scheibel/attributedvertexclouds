@@ -11,9 +11,9 @@ PrismaVertexCloud::PrismaVertexCloud()
 : PrismaImplementation("Attributed Vertex Cloud")
 , m_vertices(0)
 , m_centerHeightRangeBuffer(0)
-, m_colorValueGradientIndexBuffer(0)
+, m_colorValueBuffer(0)
 , m_centerHeightRangeTexture(0)
-, m_colorValueGradientIndexTexture(0)
+, m_colorValueTexture(0)
 , m_vao(0)
 , m_vertexShader(0)
 , m_geometryShader(0)
@@ -25,12 +25,12 @@ PrismaVertexCloud::~PrismaVertexCloud()
 {
     glDeleteBuffers(1, &m_vertices);
     glDeleteBuffers(1, &m_centerHeightRangeBuffer);
-    glDeleteBuffers(1, &m_colorValueGradientIndexBuffer);
+    glDeleteBuffers(1, &m_colorValueBuffer);
 
     glDeleteVertexArrays(1, &m_vao);
 
     glDeleteTextures(1, &m_centerHeightRangeTexture);
-    glDeleteTextures(1, &m_colorValueGradientIndexTexture);
+    glDeleteTextures(1, &m_colorValueTexture);
 
     glDeleteShader(m_vertexShader);
     glDeleteShader(m_geometryShader);
@@ -42,12 +42,12 @@ void PrismaVertexCloud::onInitialize()
 {
     glGenBuffers(1, &m_vertices);
     glGenBuffers(1, &m_centerHeightRangeBuffer);
-    glGenBuffers(1, &m_colorValueGradientIndexBuffer);
+    glGenBuffers(1, &m_colorValueBuffer);
 
     glGenVertexArrays(1, &m_vao);
 
     glGenTextures(1, &m_centerHeightRangeTexture);
-    glGenTextures(1, &m_colorValueGradientIndexTexture);
+    glGenTextures(1, &m_colorValueTexture);
 
     initializeVAO();
 
@@ -102,17 +102,13 @@ void PrismaVertexCloud::initializeVAO()
     glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, m_centerHeightRangeBuffer);
 
-    glBindBuffer(GL_TEXTURE_BUFFER, m_colorValueGradientIndexBuffer);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 2 * m_center.size(), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_TEXTURE_BUFFER, m_colorValueBuffer);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(float) * 1 * m_center.size(), nullptr, GL_STATIC_DRAW);
 
-    for (auto i = size_t(0); i < m_center.size(); ++i)
-    {
-        glBufferSubData(GL_TEXTURE_BUFFER, sizeof(float) * 2 * i, 1 * sizeof(float), &m_colorValue[i]);
-        glBufferSubData(GL_TEXTURE_BUFFER, sizeof(float) * (2 * i + 1), 1 * sizeof(float), &m_gradientIndex[i]);
-    }
+    glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(float) * 1 * m_colorValue.size(), m_colorValue.data());
 
-    glBindTexture(GL_TEXTURE_BUFFER, m_colorValueGradientIndexTexture);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, m_colorValueGradientIndexBuffer);
+    glBindTexture(GL_TEXTURE_BUFFER, m_colorValueTexture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, m_colorValueBuffer);
 
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
     glBindTexture(GL_TEXTURE_BUFFER, 0);
@@ -174,7 +170,6 @@ void PrismaVertexCloud::setPrisma(size_t index, const Prisma & prisma)
     m_center[index] = glm::vec2(0.0f, 0.0f);
     m_heightRange[index] = prisma.heightRange;
     m_colorValue[index] = prisma.colorValue;
-    m_gradientIndex[index] = prisma.gradientIndex;
 
     if (prisma.points.empty())
     {
@@ -238,7 +233,6 @@ void PrismaVertexCloud::resize(size_t count)
     m_center.resize(count);
     m_heightRange.resize(count);
     m_colorValue.resize(count);
-    m_gradientIndex.resize(count);
 }
 
 void PrismaVertexCloud::onRender()
@@ -250,7 +244,7 @@ void PrismaVertexCloud::onRender()
     glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_BUFFER, m_colorValueGradientIndexTexture);
+    glBindTexture(GL_TEXTURE_BUFFER, m_colorValueTexture);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -263,9 +257,9 @@ void PrismaVertexCloud::onRender()
 
     glUseProgram(m_program);
     const auto centerAndHeightsLocation = glGetUniformLocation(m_program, "centerAndHeights");
-    const auto colorAndGradientsLocation = glGetUniformLocation(m_program, "colorAndGradients");
+    const auto colorValuesLocation = glGetUniformLocation(m_program, "colorValues");
     glUniform1i(centerAndHeightsLocation, 1);
-    glUniform1i(colorAndGradientsLocation, 2);
+    glUniform1i(colorValuesLocation, 2);
     glDrawArrays(GL_POINTS, 0, size()-1);
 
     glUseProgram(0);

@@ -39,7 +39,6 @@ public:
     std::vector<glm::vec2> m_extent;
     std::vector<glm::vec2> m_heightRange;
     std::vector<float> m_colorValue;
-    std::vector<int> m_gradientIndex;
 
     gl::GLuint m_vertices;
     gl::GLuint m_vao;
