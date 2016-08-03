@@ -29,6 +29,7 @@ static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize
 static const auto fpsSampleCount = size_t(100);
 
 static const auto worldScale = glm::vec3(1.3f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
+static const auto gridOffset = 0.2f;
 
 } // namespace
 
@@ -91,18 +92,23 @@ void Rendering::createGeometry()
         noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
     }
 
-//#pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < prismaCount; ++i)
     {
         const auto position = glm::ivec3(i % prismaGridSize, (i / prismaGridSize) % prismaGridSize, i / prismaGridSize / prismaGridSize);
+        const auto offset = glm::vec3(
+            (position.y + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.y) % 2 ? gridOffset : 0.0f
+        );
 
         Prisma p;
 
-        p.heightRange.x = -0.5f + position.y * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
-        p.heightRange.y = -0.5f + position.y * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
+        p.heightRange.x = -0.5f + (position.y + offset.y) * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
+        p.heightRange.y = -0.5f + (position.y + offset.y) * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
 
         const auto vertexCount = size_t(3) + size_t(glm::ceil(6.0f * 0.5f * (noise[1][i] + 1.0f)));
-        const auto center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
+        const auto center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
         const auto radius = 0.5f * 0.5f * (noise[2][i] + 1.0f);
 
         p.points.resize(vertexCount);

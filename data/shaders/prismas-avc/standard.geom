@@ -1,9 +1,10 @@
 #version 430
 
 layout (points) in;
-layout (triangle_strip, max_vertices = 5) out;
+layout (triangle_strip, max_vertices = 6) out;
 
 const vec3 UP = vec3(0.0, 1.0, 0.0);
+const vec3 DOWN = vec3(0.0, -1.0, 0.0);
 
 uniform mat4 viewProjection;
 
@@ -43,18 +44,21 @@ void main()
     
     vec3 center = vec3(centerAndHeight.r, centerAndHeight.a, centerAndHeight.g);
     
+    vec3 cBottom = vec3(center.x, centerAndHeight.b, center.z);
     vec3 sBottom = vec3(v_start[0].x, centerAndHeight.b, v_start[0].y);
     vec3 eBottom = vec3(v_end[0].x, centerAndHeight.b, v_end[0].y);
+    vec3 cTop = center;
     vec3 sTop = vec3(v_start[0].x, centerAndHeight.a, v_start[0].y);
     vec3 eTop = vec3(v_end[0].x, centerAndHeight.a, v_end[0].y);
         
     vec3 normal = cross(sBottom - eBottom, UP);
     
-    emit(eBottom, normal, color);
-    emit(sBottom, normal, color);
-    emit(eTop, normal, color);
+    emit(cBottom, DOWN, color);
+    emit(sBottom, DOWN, color);
+    emit(eBottom, DOWN, color);
     emit(sTop, normal, color);
-    emit(center, UP, color);
+    emit(eTop, normal, color);
+    emit(cTop, UP, color);
     
     EndPrimitive();
 }

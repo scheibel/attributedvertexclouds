@@ -10,7 +10,7 @@
 #define H 7
 
 layout (lines) in;
-layout (triangle_strip, max_vertices = 16) out;
+layout (triangle_strip, max_vertices = 18) out;
 
 uniform mat4 viewProjection;
 
@@ -46,7 +46,7 @@ vec3 circlePoint(in float angle, in float radius, in float height, in vec2 cente
     return vec3(x, height, y);
 }
 
-void emitPrimitive8(in int indices[8])
+void emitPrimitive10(in int indices[10])
 {
     vec3 prevPrev = segment[indices[0]];
     vec3 prev = segment[indices[1]];
@@ -54,7 +54,28 @@ void emitPrimitive8(in int indices[8])
     emit(prevPrev, vec3(0.0));
     emit(prev, vec3(0.0));
     
-    for (int i=2; i<8; ++i)
+    for (int i=2; i<10; ++i)
+    {
+        vec3 current = segment[indices[i]];
+        vec3 n = cross(prev-prevPrev, current-prev) * (i%2==0?1.0:-1.0);
+        emit(current, n);
+        
+        prevPrev = prev;
+        prev = current;
+    }
+    
+    EndPrimitive();
+}
+
+void emitPrimitive6(in int indices[6])
+{
+    vec3 prevPrev = segment[indices[0]];
+    vec3 prev = segment[indices[1]];
+    
+    emit(prevPrev, vec3(0.0));
+    emit(prev, vec3(0.0));
+    
+    for (int i=2; i<6; ++i)
     {
         vec3 current = segment[indices[i]];
         vec3 n = cross(prev-prevPrev, current-prev) * (i%2==0?1.0:-1.0);
@@ -109,14 +130,14 @@ void main()
     segment[G] = circlePoint(endAngle, outerRadius, endTop, center);
     segment[H] = circlePoint(startAngle, outerRadius, startTop, center);
         
-    if (startBottom - startTop > 0.0 || endBottom - endTop > 0.0)
+    if (startTop - startBottom > 0.0 || endTop - endBottom > 0.0)
     {
         if (vertex[0].hasSide)
         {
             emitPrimitive4(int[4](A, D, E, H));
         }
         
-        emitPrimitive8(int[8](B, A, F, E, G, H, C, D));
+        emitPrimitive10(int[10](B, A, F, E, G, H, C, D, B, A));
         
         if (vertex[1].hasSide)
         {
@@ -125,6 +146,6 @@ void main()
     }
     else
     {
-        emitPrimitive4(int[4](F, E, G, H));
+        emitPrimitive6(int[6](E, F, H, G, E, F));
     }
 }

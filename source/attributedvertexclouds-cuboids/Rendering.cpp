@@ -30,6 +30,7 @@ static const auto cuboidCount = cuboidGridSize * cuboidGridSize * cuboidGridSize
 static const auto fpsSampleCount = size_t(100);
 
 static const auto worldScale = glm::vec3(1.3f) / glm::vec3(cuboidGridSize, cuboidGridSize, cuboidGridSize);
+static const auto gridOffset = 0.2f;
 
 
 } // namespace
@@ -97,25 +98,14 @@ void Rendering::createGeometry()
     for (size_t i = 0; i < cuboidCount; ++i)
     {
         const auto position = glm::ivec3(i % cuboidGridSize, (i / cuboidGridSize) % cuboidGridSize, i / cuboidGridSize / cuboidGridSize);
+        const auto offset = glm::vec3(
+            (position.y + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.y) % 2 ? gridOffset : 0.0f
+        );
 
         Cuboid c;
-        c.center = glm::vec3(-0.5f, -0.5f, -0.5f) + glm::vec3(position) * worldScale;
-
-        if ((position.y + position.z) % 2)
-        {
-            c.center.x += 0.2f * worldScale.x;
-        }
-
-        if ((position.x + position.z) % 2)
-        {
-            c.center.y += 0.2f * worldScale.y;
-        }
-
-        if ((position.x + position.y) % 2)
-        {
-            c.center.z += 0.2f * worldScale.z;
-        }
-
+        c.center = glm::vec3(-0.5f, -0.5f, -0.5f) + (glm::vec3(position) + offset) * worldScale;
         c.extent = glm::mix(glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(noise[0][i], noise[1][i], noise[2][i])) * worldScale;
         c.colorValue = glm::mix(0.0f, 1.0f, noise[3][i]);
         c.gradientIndex = 0;

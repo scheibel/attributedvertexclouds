@@ -30,6 +30,7 @@ static const auto arcTessellationCount = size_t(128);
 static const auto fpsSampleCount = size_t(100);
 
 static const auto worldScale = glm::vec3(1.3f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
+static const auto gridOffset = 0.2f;
 
 } // namespace
 
@@ -86,49 +87,38 @@ void Rendering::createGeometry()
         implementation->resize(arcCount);
     }
 
-    std::array<std::vector<float>, 6> noise;
+    std::array<std::vector<float>, 7> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
         noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(i)+".raw");
     }
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (size_t i = 0; i < arcCount; ++i)
     {
         const auto position = glm::ivec3(i % arcGridSize, (i / arcGridSize) % arcGridSize, i / arcGridSize / arcGridSize);
+        const auto offset = glm::vec3(
+            (position.y + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.z) % 2 ? gridOffset : 0.0f,
+            (position.x + position.y) % 2 ? gridOffset : 0.0f
+        );
 
         Arc a;
-        a.center = glm::vec2(-0.5f, -0.5f) + glm::vec2(position.x, position.z) * glm::vec2(worldScale.x, worldScale.z);
+        a.center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
 
-        if ((position.y + position.z) % 2)
-        {
-            a.center.x += 0.2f * worldScale.x;
-        }
-
-        if ((position.x + position.y) % 2)
-        {
-            a.center.y += 0.2f * worldScale.z;
-        }
-
-        a.heightRange.x = -0.5f + (position.y + 0.5f * noise[0][i]) * worldScale.y;
-        a.heightRange.y = -0.5f + (position.y - 0.5f * noise[0][i]) * worldScale.y;
-
-        if ((position.x + position.z) % 2)
-        {
-            a.heightRange.x += 0.2f * worldScale.y;
-            a.heightRange.y += 0.2f * worldScale.y;
-        }
+        a.heightRange.x = -0.5f + (position.y + offset.y - 0.5f * noise[0][i]) * worldScale.y;
+        a.heightRange.y = -0.5f + (position.y + offset.y + 0.5f * noise[0][i]) * worldScale.y;
 
         a.angleRange.x = -0.5f * glm::pi<float>() + 0.75f * glm::pi<float>() * noise[1][i];
         a.angleRange.y = 0.25f * glm::pi<float>() + 0.5f * glm::pi<float>() * noise[2][i];
 
-        a.radiusRange.x = 0.4f * noise[3][i] * worldScale.x;
-        a.radiusRange.y = a.radiusRange.x + 0.6f * noise[4][i] * worldScale.x;
+        a.radiusRange.x = 0.3f * noise[3][i] * worldScale.x;
+        a.radiusRange.y = a.radiusRange.x + 0.5f * noise[4][i] * worldScale.x;
 
         a.colorValue = noise[5][i];
         a.gradientIndex = 0;
 
-        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::linearRand(4.0f, 64.0f) / (2.0f * glm::pi<float>()));
+        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::mix(4.0f, 64.0f, noise[6][i]) / (2.0f * glm::pi<float>()));
 
         for (auto implementation : m_implementations)
         {
