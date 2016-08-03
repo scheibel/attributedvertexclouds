@@ -35,9 +35,6 @@ Rendering::Rendering()
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
 {
-    m_postprocessing = new Postprocessing;
-
-    setTechnique(0);
 }
 
 Rendering::~Rendering()
@@ -53,6 +50,11 @@ Rendering::~Rendering()
     }
 }
 
+void Rendering::addImplementation(Implementation *implementation)
+{
+    m_implementations.push_back(implementation);
+}
+
 void Rendering::initialize()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -61,10 +63,14 @@ void Rendering::initialize()
 
     glGenQueries(1, &m_query);
 
+    m_postprocessing = new Postprocessing;
+
     initialize();
     createGeometry();
 
     m_start = std::chrono::high_resolution_clock::now();
+
+    setTechnique(0);
 }
 
 void Rendering::reloadShaders()
@@ -106,6 +112,11 @@ void Rendering::prepareRendering()
     glUseProgram(0);
 
     onPrepareRendering();
+}
+
+void Rendering::finalizeRendering()
+{
+    onFinalizeRendering();
 }
 
 void Rendering::resize(int w, int h)

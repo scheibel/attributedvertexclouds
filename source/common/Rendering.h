@@ -15,8 +15,6 @@ public:
     Rendering();
     virtual ~Rendering();
 
-    void addImplementation(Implementation * implementation);
-
     void initialize();
     void createGeometry();
 
@@ -54,9 +52,11 @@ protected:
     void prepareRendering();
     void finalizeRendering();
 
+    void addImplementation(Implementation * implementation);
+
     // Subclass interface
 
-    virtual void oninitialize() = 0;
+    virtual void onInitialize() = 0;
     virtual void onCreateGeometry() = 0;
     virtual void onPrepareRendering() = 0;
     virtual void onFinalizeRendering() = 0;

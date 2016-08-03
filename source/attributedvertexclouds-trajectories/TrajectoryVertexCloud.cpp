@@ -8,7 +8,7 @@
 using namespace gl;
 
 TrajectoryVertexCloud::TrajectoryVertexCloud()
-: m_initialized(false)
+: Implementation("Vertex Cloud")
 , m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
@@ -29,28 +29,6 @@ TrajectoryVertexCloud::~TrajectoryVertexCloud()
     glDeleteShader(m_geometryShader);
     glDeleteShader(m_fragmentShader);
     glDeleteProgram(m_program);
-}
-
-bool TrajectoryVertexCloud::initialized() const
-{
-    return m_initialized;
-}
-
-void TrajectoryVertexCloud::initialize()
-{
-    if (!initialized())
-    {
-        onInitialize();
-
-        m_initialized = true;
-    }
-}
-
-void TrajectoryVertexCloud::render()
-{
-    initialize();
-
-    onRender();
 }
 
 void TrajectoryVertexCloud::onInitialize()

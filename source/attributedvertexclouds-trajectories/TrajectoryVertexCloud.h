@@ -7,40 +7,36 @@
 
 #include <glbinding/gl/types.h>
 
+#include "Implementation.h"
+
 #include "TrajectoryNode.h"
 
 
-class TrajectoryVertexCloud
+class TrajectoryVertexCloud : public Implementation
 {
 public:
     TrajectoryVertexCloud();
-    ~TrajectoryVertexCloud();
+    virtual ~TrajectoryVertexCloud();
 
-    bool initialized() const;
+    virtual void onInitialize() override;
+    virtual void onRender() override;
 
-    void initialize();
-    void render();
+    virtual bool loadShader() override;
 
-    void onInitialize();
-    void onRender();
+    virtual size_t size() const override;
+    virtual size_t verticesCount() const override;
+    virtual size_t staticByteSize() const override;
+    virtual size_t byteSize() const override;
+    virtual size_t vertexByteSize() const override;
+    virtual size_t componentCount() const override;
 
-    bool loadShader();
+    virtual void resize(size_t count) override;
+
+    virtual gl::GLuint program() const override;
 
     void setTrajectoryNode(size_t index, const TrajectoryNode & node);
 
-    size_t size() const;
-    size_t verticesCount() const;
-    size_t staticByteSize() const;
-    size_t byteSize() const;
-    size_t vertexByteSize() const;
-    size_t componentCount() const;
-
-    void resize(size_t count);
-
-    gl::GLuint program() const;
 public:
-    bool m_initialized;
-
     std::vector<glm::vec3> m_position;
     std::vector<int> m_type;
     std::vector<glm::vec3> m_incoming;
