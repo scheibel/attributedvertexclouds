@@ -34,6 +34,7 @@ protected:
     std::array<PrismaImplementation *, 4> m_implementations;
 
     gl::GLuint m_query;
+    gl::GLuint m_gradientTexture;
 
     int m_width;
     int m_height;

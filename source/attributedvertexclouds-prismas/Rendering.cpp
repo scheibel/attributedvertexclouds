@@ -24,6 +24,7 @@ using namespace gl;
 namespace
 {
 
+
 static const auto prismaGridSize = size_t(48);
 static const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
 static const auto fpsSampleCount = size_t(100);
@@ -31,12 +32,19 @@ static const auto fpsSampleCount = size_t(100);
 static const auto worldScale = glm::vec3(1.0f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
 static const auto gridOffset = 0.2f;
 
+static const auto lightGray = glm::vec3(234) / 275.0f;
+static const auto red = glm::vec3(196, 30, 20) / 275.0f;
+static const auto orange = glm::vec3(255, 114, 70) / 275.0f;
+static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
+
+
 } // namespace
 
 
 Rendering::Rendering()
 : m_current(nullptr)
 , m_query(0)
+, m_gradientTexture(0)
 , m_measure(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
@@ -53,6 +61,7 @@ Rendering::~Rendering()
 {
     // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
     glDeleteQueries(1, &m_query);
+    glDeleteTextures(1, &m_gradientTexture);
 }
 
 void Rendering::initialize()
@@ -64,6 +73,23 @@ void Rendering::initialize()
     createGeometry();
 
     glGenQueries(1, &m_query);
+
+    glGenTextures(1, &m_gradientTexture);
+
+    std::array<glm::vec3, 4> gradient = {{
+        red,
+        orange,
+        yellow,
+        lightGray
+    }};
+
+    glBindTexture(GL_TEXTURE_1D, m_gradientTexture);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, gradient.size(), 0, GL_RGB, GL_FLOAT, gradient.data());
+    glBindTexture(GL_TEXTURE_1D, 0);
 
     m_start = std::chrono::high_resolution_clock::now();
 }
@@ -147,8 +173,10 @@ void Rendering::updateUniforms()
 
     GLuint program = m_current->program();
     const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+    const auto gradientSamplerLocation = glGetUniformLocation(program, "gradient");
     glUseProgram(program);
     glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+    glUniform1i(gradientSamplerLocation, 0);
 
     glUseProgram(0);
 }
@@ -206,6 +234,9 @@ void Rendering::render()
 
     updateUniforms();
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, m_gradientTexture);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (m_rasterizerDiscard)
@@ -221,6 +252,9 @@ void Rendering::render()
     {
         glDisable(GL_RASTERIZER_DISCARD);
     }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, 0);
 }
 
 void Rendering::spaceMeasurement()

@@ -231,6 +231,9 @@ void Rendering::render()
     {
         glDisable(GL_RASTERIZER_DISCARD);
     }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void Rendering::spaceMeasurement()

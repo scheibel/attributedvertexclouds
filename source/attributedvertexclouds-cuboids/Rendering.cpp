@@ -44,6 +44,7 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 Rendering::Rendering()
 : m_current(nullptr)
 , m_query(0)
+, m_gradientTexture(0)
 , m_measure(false)
 , m_rasterizerDiscard(false)
 , m_fpsSamples(fpsSampleCount+1)
@@ -232,6 +233,9 @@ void Rendering::render()
     {
         glDisable(GL_RASTERIZER_DISCARD);
     }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_1D, 0);
 }
 
 void Rendering::spaceMeasurement()

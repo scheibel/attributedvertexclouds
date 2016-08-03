@@ -246,10 +246,10 @@ void PrismaVertexCloud::onRender()
     glBindVertexArray(m_vao);
 
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_BUFFER, m_centerHeightRangeTexture);
 
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_BUFFER, m_colorValueGradientIndexTexture);
 
     glEnable(GL_DEPTH_TEST);
@@ -264,11 +264,17 @@ void PrismaVertexCloud::onRender()
     glUseProgram(m_program);
     const auto centerAndHeightsLocation = glGetUniformLocation(m_program, "centerAndHeights");
     const auto colorAndGradientsLocation = glGetUniformLocation(m_program, "colorAndGradients");
-    glUniform1i(centerAndHeightsLocation, 0);
-    glUniform1i(colorAndGradientsLocation, 1);
+    glUniform1i(centerAndHeightsLocation, 1);
+    glUniform1i(colorAndGradientsLocation, 2);
     glDrawArrays(GL_POINTS, 0, size()-1);
 
     glUseProgram(0);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
 
     glBindVertexArray(0);
 }

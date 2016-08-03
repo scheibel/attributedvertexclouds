@@ -5,8 +5,9 @@ in vec2  in_heightRange;
 in vec2  in_angleRange;
 in vec2  in_radiusRange;
 in float in_colorValue;
-in int   in_gradientIndex;
 in int   in_tessellationCount;
+
+uniform sampler1D gradient;
 
 out Segment
 {
@@ -24,6 +25,6 @@ void main()
     segment.radiusRange = in_radiusRange;
     segment.heightRange = in_heightRange;
     segment.center = in_center;
-    segment.color = in_colorValue * mix(vec3(1, 0, 0), vec3(0, 1, 0), float(bool(in_gradientIndex)));
+    segment.color = texture(gradient, in_colorValue).rgb;
     segment.tessellationCount = in_tessellationCount;
 }
