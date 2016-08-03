@@ -26,10 +26,14 @@ set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(headers
     ${include_path}/common.h
+    
+    ${include_path}/Postprocessing.h
 )
 
 set(sources
     ${source_path}/common.cpp
+
+    ${source_path}/Postprocessing.cpp
 )
 
 # Group source files

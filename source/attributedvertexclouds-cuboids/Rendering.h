@@ -5,6 +5,7 @@
 
 
 class CuboidImplementation;
+class Postprocessing;
 
 
 class Rendering
@@ -32,20 +33,11 @@ public:
 
 protected:
     CuboidImplementation * m_current;
+    Postprocessing * m_postprocessing;
     std::array<CuboidImplementation *, 4> m_implementations;
 
     gl::GLuint m_query;
     gl::GLuint m_gradientTexture;
-
-    gl::GLuint m_fbo;
-    gl::GLuint m_colorBuffer;
-    gl::GLuint m_depthBuffer;
-
-    gl::GLuint m_postprocessingVertices;
-    gl::GLuint m_postprocessingVAO;
-    gl::GLuint m_postProcessingProgram;
-    gl::GLuint m_postProcessingVertexShader;
-    gl::GLuint m_postProcessingFragmentShader;
 
     int m_width;
     int m_height;
