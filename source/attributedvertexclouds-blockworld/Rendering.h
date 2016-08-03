@@ -34,6 +34,7 @@ protected:
     std::array<BlockWorldImplementation *, 4> m_implementations;
 
     gl::GLuint m_query;
+    gl::GLuint m_terrainTexture;
 
     int m_width;
     int m_height;

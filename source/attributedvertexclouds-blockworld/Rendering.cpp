@@ -64,6 +64,17 @@ void Rendering::initialize()
 
     createGeometry();
 
+    glGenTextures(1, &m_terrainTexture);
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, static_cast<GLint>(GL_MIRRORED_REPEAT));
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, static_cast<GLint>(GL_MIRRORED_REPEAT));
+
+    auto terrainData = rawFromFile("data/textures/terrain.512.2048.rgba.ub.raw");
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, static_cast<GLint>(GL_RGBA8), 512, 512, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, terrainData.data());
+
     glGenQueries(1, &m_query);
 
     m_start = std::chrono::high_resolution_clock::now();
@@ -85,6 +96,7 @@ void Rendering::createGeometry()
     for (auto implementation : m_implementations)
     {
         implementation->resize(blockCount);
+        implementation->setBlockSize(worldScale.x);
     }
 
     std::array<std::vector<float>, 4> noise;
@@ -126,8 +138,10 @@ void Rendering::updateUniforms()
         {
             GLuint program = implementation->program();
             const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+            const auto terrainSamplerLocation = glGetUniformLocation(program, "terrain");
             glUseProgram(program);
             glUniformMatrix4fv(viewProjectionLocation, 1, GL_FALSE, glm::value_ptr(viewProjection));
+            glUniform1i(terrainSamplerLocation, 0);
         }
     }
 
@@ -193,6 +207,9 @@ void Rendering::render()
     {
         glEnable(GL_RASTERIZER_DISCARD);
     }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_terrainTexture);
 
     measureGPU("rendering", [this]() {
         m_current->render();
