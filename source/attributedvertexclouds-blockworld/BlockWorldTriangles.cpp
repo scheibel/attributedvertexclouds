@@ -114,7 +114,7 @@ bool BlockWorldTriangles::loadShader()
 void BlockWorldTriangles::setBlock(size_t index, const Block & block)
 {
     static const glm::vec3 NEGATIVE_X = glm::vec3(-1.0, 0.0, 0.0);
-    //static const glm::vec3 NEGATIVE_Y = glm::vec3(0.0, -1.0, 0.0);
+    static const glm::vec3 NEGATIVE_Y = glm::vec3(0.0, -1.0, 0.0);
     static const glm::vec3 NEGATIVE_Z = glm::vec3(0.0, 0.0, -1.0);
     static const glm::vec3 POSITIVE_X = glm::vec3(1.0, 0.0, 0.0);
     static const glm::vec3 POSITIVE_Y = glm::vec3(0.0, 1.0, 0.0);
@@ -166,6 +166,13 @@ void BlockWorldTriangles::setBlock(size_t index, const Block & block)
     m_normal[verticesPerCuboid() * index + 28] = POSITIVE_Y;
     m_normal[verticesPerCuboid() * index + 29] = POSITIVE_Y;
 
+    m_normal[verticesPerCuboid() * index + 30] = NEGATIVE_Y;
+    m_normal[verticesPerCuboid() * index + 31] = NEGATIVE_Y;
+    m_normal[verticesPerCuboid() * index + 32] = NEGATIVE_Y;
+    m_normal[verticesPerCuboid() * index + 33] = NEGATIVE_Y;
+    m_normal[verticesPerCuboid() * index + 34] = NEGATIVE_Y;
+    m_normal[verticesPerCuboid() * index + 35] = NEGATIVE_Y;
+
     m_vertex[verticesPerCuboid() * index + 0] = vertices[1];
     m_vertex[verticesPerCuboid() * index + 1] = vertices[0];
     m_vertex[verticesPerCuboid() * index + 2] = vertices[5];
@@ -200,6 +207,13 @@ void BlockWorldTriangles::setBlock(size_t index, const Block & block)
     m_vertex[verticesPerCuboid() * index + 27] = vertices[0];
     m_vertex[verticesPerCuboid() * index + 28] = vertices[3];
     m_vertex[verticesPerCuboid() * index + 29] = vertices[2];
+
+    m_vertex[verticesPerCuboid() * index + 30] = vertices[4];
+    m_vertex[verticesPerCuboid() * index + 31] = vertices[5];
+    m_vertex[verticesPerCuboid() * index + 32] = vertices[6];
+    m_vertex[verticesPerCuboid() * index + 33] = vertices[6];
+    m_vertex[verticesPerCuboid() * index + 34] = vertices[7];
+    m_vertex[verticesPerCuboid() * index + 35] = vertices[4];
 
     for (auto i = 0ull; i < verticesPerCuboid(); ++i)
     {
