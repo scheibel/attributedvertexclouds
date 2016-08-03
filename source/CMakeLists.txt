@@ -18,6 +18,7 @@ add_subdirectory(common)
 
 # Examples
 set(IDE_FOLDER "Examples")
+add_subdirectory(attributedvertexclouds-blockworld)
 add_subdirectory(attributedvertexclouds-cuboids)
 add_subdirectory(attributedvertexclouds-arcs)
 add_subdirectory(attributedvertexclouds-prismas)
