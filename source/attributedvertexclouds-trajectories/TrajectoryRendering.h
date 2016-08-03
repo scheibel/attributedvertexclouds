@@ -6,9 +6,6 @@
 #include "Rendering.h"
 
 
-class TrajectoryVertexCloud;
-
-
 class TrajectoryRendering : public Rendering
 {
 public:

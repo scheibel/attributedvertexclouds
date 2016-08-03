@@ -16,7 +16,6 @@ public:
     virtual ~Rendering();
 
     void initialize();
-    void createGeometry();
 
     void resize(int w, int h);
     void render();

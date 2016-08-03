@@ -65,8 +65,8 @@ void Rendering::initialize()
 
     m_postprocessing = new Postprocessing;
 
-    initialize();
-    createGeometry();
+    onInitialize();
+    onCreateGeometry();
 
     m_start = std::chrono::high_resolution_clock::now();
 
@@ -84,11 +84,6 @@ void Rendering::reloadShaders()
     }
 
     m_postprocessing->loadShader();
-}
-
-void Rendering::createGeometry()
-{
-    onCreateGeometry();
 }
 
 void Rendering::prepareRendering()
@@ -124,7 +119,7 @@ void Rendering::resize(int w, int h)
     m_width = w;
     m_height = h;
 
-    if (m_postprocessing->initialized())
+    if (m_postprocessing && m_postprocessing->initialized())
     {
         m_postprocessing->resize(m_width, m_height);
     }
@@ -132,6 +127,11 @@ void Rendering::resize(int w, int h)
 
 void Rendering::setTechnique(int i)
 {
+    if (i < 0 || i >= m_implementations.size())
+    {
+        return;
+    }
+
     m_current = m_implementations.at(i);
 
     std::cout << "Switch to " << m_current->name() << " implementation" << std::endl;
