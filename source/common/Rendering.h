@@ -9,6 +9,7 @@
 
 class Implementation;
 class Postprocessing;
+class Screenshot;
 
 
 class Rendering
@@ -30,6 +31,7 @@ public:
     void reloadShaders();
     void startFPSMeasuring();
     void startPerformanceMeasuring();
+    void takeScreenshot();
 
     void setGridSize(int gridSize);
 
@@ -38,6 +40,7 @@ protected:
     int m_cameraSetting;
     Implementation * m_current;
     Postprocessing * m_postprocessing;
+    Screenshot * m_screenshot;
     std::vector<Implementation *> m_implementations;
 
     int m_width;

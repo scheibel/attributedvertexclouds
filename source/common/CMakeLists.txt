@@ -28,6 +28,7 @@ set(headers
     ${include_path}/common.h
     
     ${include_path}/Postprocessing.h
+    ${include_path}/Screenshot.h
     ${include_path}/Rendering.h
     ${include_path}/Implementation.h
 )
@@ -36,6 +37,7 @@ set(sources
     ${source_path}/common.cpp
 
     ${source_path}/Postprocessing.cpp
+    ${source_path}/Screenshot.cpp
     ${source_path}/Rendering.cpp
     ${source_path}/Implementation.cpp
 )

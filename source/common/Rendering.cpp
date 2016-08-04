@@ -12,6 +12,7 @@
 
 #include "Implementation.h"
 #include "Postprocessing.h"
+#include "Screenshot.h"
 
 
 using namespace gl;
@@ -23,6 +24,9 @@ namespace
 static const auto warmupCount = size_t(1000);
 static const auto measureCount = size_t(1000);
 static const auto fpsSampleCount = size_t(100);
+
+static const auto screenshotWidth = size_t(3840);
+static const auto screenshotHeight = size_t(2160);
 
 
 } // namespace
@@ -72,6 +76,7 @@ void Rendering::initialize()
     glGenQueries(1, &m_query);
 
     m_postprocessing = new Postprocessing;
+    m_screenshot = new Screenshot;
 
     onInitialize();
     onCreateGeometry();
@@ -274,8 +279,9 @@ void Rendering::render()
         if (!m_postprocessing->initialized())
         {
             m_postprocessing->initialize();
-            m_postprocessing->resize(m_width, m_height);
         }
+
+        m_postprocessing->resize(m_width, m_height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing->fbo());
 
@@ -311,6 +317,52 @@ void Rendering::render()
 
         m_postprocessing->render();
     }
+}
+
+void Rendering::takeScreenshot()
+{
+    if (m_inMeasurement || m_fpsSamples < fpsSampleCount)
+    {
+        std::cout << "No screenshot during measurements allowed" << std::endl;
+
+        return;
+    }
+
+    if (!m_screenshot->initialized())
+    {
+        m_screenshot->initialize();
+        m_screenshot->resize(screenshotWidth, screenshotHeight);
+    }
+
+    m_current->initialize();
+
+    glViewport(0, 0, screenshotWidth, screenshotHeight);
+
+    static const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    if (!m_postprocessing->initialized())
+    {
+        m_postprocessing->initialize();
+    }
+
+    m_postprocessing->resize(screenshotWidth, screenshotHeight);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing->fbo());
+
+    glClearBufferfv(GL_COLOR, 0, white);
+    glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0);
+
+    prepareRendering();
+
+    m_current->render();
+
+    finalizeRendering();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_screenshot->fbo());
+
+    m_postprocessing->render();
+
+    m_screenshot->saveScreenshot(m_current->name() + "-" + std::to_string(m_gridSize) + ".ppm");
 }
 
 void Rendering::spaceMeasurement()
