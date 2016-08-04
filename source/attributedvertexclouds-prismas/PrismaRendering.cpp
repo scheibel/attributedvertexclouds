@@ -37,7 +37,8 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 
 
 PrismaRendering::PrismaRendering()
-: m_gradientTexture(0)
+: Rendering("Prismas")
+, m_gradientTexture(0)
 {
 }
 

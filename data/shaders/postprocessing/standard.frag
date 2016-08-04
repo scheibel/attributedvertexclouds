@@ -92,7 +92,7 @@ float unsharpmaskingValue(
         ao /= float(pixelsCaculated);
     }
 
-    return 1.15 - 0.7 * ao;
+    return 1.15 - ao;
 }
 
 void main()

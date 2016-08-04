@@ -15,7 +15,7 @@ class Screenshot;
 class Rendering
 {
 public:
-    Rendering();
+    Rendering(const std::string & name);
     virtual ~Rendering();
 
     void initialize();
@@ -36,6 +36,8 @@ public:
     void setGridSize(int gridSize);
 
 protected:
+    std::string m_name;
+
     // Scene setup
     int m_cameraSetting;
     Implementation * m_current;

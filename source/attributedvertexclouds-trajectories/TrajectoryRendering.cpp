@@ -32,7 +32,8 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 
 
 TrajectoryRendering::TrajectoryRendering()
-: m_gradientTexture(0)
+: Rendering("Trajectories")
+, m_gradientTexture(0)
 {
 }
 

@@ -63,6 +63,11 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         rendering.spaceMeasurement();
     }
 
+    if (key == GLFW_KEY_F12 && action == GLFW_RELEASE)
+    {
+        rendering.takeScreenshot();
+    }
+
     if (key == GLFW_KEY_R && action == GLFW_RELEASE)
     {
         rendering.toggleRasterizerDiscard();
@@ -125,6 +130,14 @@ int main(int argc, char ** argv)
         {
             fullScreen = true;
         }
+        else if (argument == "xxs")
+        {
+            gridSize = 2;
+        }
+        else if (argument == "xs")
+        {
+            gridSize = 8;
+        }
         else if (argument == "s")
         {
             gridSize = 16;
@@ -167,6 +180,7 @@ int main(int argc, char ** argv)
     std::cout << "Debugging" << std::endl;
     std::cout << " [r] Enable/Disable rasterizer" << std::endl;
     std::cout << " [F5]: Shader Reload" << std::endl;
+    std::cout << " [F12]: Screenshot" << std::endl;
 
     glfwSetErrorCallback(errorCallback);
 

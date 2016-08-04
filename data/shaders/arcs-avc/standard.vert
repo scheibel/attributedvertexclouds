@@ -25,6 +25,6 @@ void main()
     segment.radiusRange = in_radiusRange;
     segment.heightRange = in_heightRange;
     segment.center = in_center;
-    segment.color = texture(gradient).rgb;
+    segment.color = texture(gradient, in_colorValue).rgb;
     segment.tessellationCount = in_tessellationCount;
 }

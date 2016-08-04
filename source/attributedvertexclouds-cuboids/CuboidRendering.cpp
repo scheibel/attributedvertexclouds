@@ -37,7 +37,8 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 
 
 CuboidRendering::CuboidRendering()
-: m_gradientTexture(0)
+: Rendering("Cuboids")
+, m_gradientTexture(0)
 {
 }
 

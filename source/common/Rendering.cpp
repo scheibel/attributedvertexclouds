@@ -28,12 +28,17 @@ static const auto fpsSampleCount = size_t(100);
 static const auto screenshotWidth = size_t(3840);
 static const auto screenshotHeight = size_t(2160);
 
+//static const float clearColor[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+//static const float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+static const float clearColor[] = { 0.12f, 0.14f, 0.18f, 1.0f };
+
 
 } // namespace
 
 
-Rendering::Rendering()
-: m_current(nullptr)
+Rendering::Rendering(const std::string & name)
+: m_name(name)
+, m_current(nullptr)
 , m_postprocessing(nullptr)
 , m_width(0)
 , m_height(0)
@@ -69,7 +74,7 @@ void Rendering::addImplementation(Implementation *implementation)
 
 void Rendering::initialize()
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
 
@@ -107,8 +112,11 @@ void Rendering::cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & 
     static const auto eye0 = glm::vec3(1.1f, 1.1f, 1.1f);
     static const auto eye1 = glm::vec3(1.2f, 0.0f, 1.2f);
     static const auto eye2 = glm::vec3(1.4f, 0.0f, 0.0f);
+    static const auto eye3 = glm::vec3(0.9f, 0.6f, 0.6f);
 
     static const auto center0 = glm::vec3(0.0f, 0.0f, 0.0f);
+    static const auto center1 = glm::vec3(0.1f, 0.2f, 0.0f);
+
     static const auto up0 = glm::vec3(0.0f, 1.0f, 0.0f);
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
@@ -140,8 +148,8 @@ void Rendering::cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & 
         up = up0;
         break;
     case 3:
-        eye = eye2;
-        center = center0;
+        eye = eye3;
+        center = center1;
         up = up0;
         break;
     default:
@@ -274,8 +282,6 @@ void Rendering::render()
 
     if (m_usePostprocessing && !m_rasterizerDiscard)
     {
-        static const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
         if (!m_postprocessing->initialized())
         {
             m_postprocessing->initialize();
@@ -285,7 +291,7 @@ void Rendering::render()
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing->fbo());
 
-        glClearBufferfv(GL_COLOR, 0, white);
+        glClearBufferfv(GL_COLOR, 0, clearColor);
         glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0);
     }
     else
@@ -338,8 +344,6 @@ void Rendering::takeScreenshot()
 
     glViewport(0, 0, screenshotWidth, screenshotHeight);
 
-    static const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
     if (!m_postprocessing->initialized())
     {
         m_postprocessing->initialize();
@@ -349,7 +353,7 @@ void Rendering::takeScreenshot()
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing->fbo());
 
-    glClearBufferfv(GL_COLOR, 0, white);
+    glClearBufferfv(GL_COLOR, 0, clearColor);
     glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0);
 
     prepareRendering();
@@ -362,7 +366,7 @@ void Rendering::takeScreenshot()
 
     m_postprocessing->render();
 
-    m_screenshot->saveScreenshot(m_current->name() + "-" + std::to_string(m_gridSize) + ".ppm");
+    m_screenshot->saveScreenshot(m_name + "-" + std::to_string(m_gridSize) + ".ppm");
 }
 
 void Rendering::spaceMeasurement()
