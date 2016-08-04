@@ -138,6 +138,12 @@ int main(int argc, char ** argv)
     std::cout << " [3] Instancing" << std::endl;
     std::cout << " [4] Attributed Vertex Cloud" << std::endl;
     std::cout << std::endl;
+    std::cout << "Camera Preset" << std::endl;
+    std::cout << " [F1] Moving" << std::endl;
+    std::cout << " [F2] Preset 1" << std::endl;
+    std::cout << " [F3] Preset 2" << std::endl;
+    std::cout << " [F4] Preset 3" << std::endl;
+    std::cout << std::endl;
     std::cout << "Rendering" << std::endl;
     std::cout << " [KP +] Render more blocks" << std::endl;
     std::cout << " [KP -] Render less blocks" << std::endl;
