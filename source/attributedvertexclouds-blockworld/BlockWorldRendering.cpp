@@ -23,6 +23,7 @@ using namespace gl;
 
 BlockWorldRendering::BlockWorldRendering()
 : m_terrainTexture(0)
+, m_blockThreshold(7)
 {
 }
 

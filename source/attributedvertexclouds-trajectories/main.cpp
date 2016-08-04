@@ -56,6 +56,16 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
     {
         rendering.toggleRasterizerDiscard();
     }
+
+    if (key == GLFW_KEY_P && action == GLFW_RELEASE)
+    {
+        rendering.togglePostprocessing();
+    }
+
+    if (key >= GLFW_KEY_1 && key <= GLFW_KEY_4 && action == GLFW_RELEASE)
+    {
+        rendering.setTechnique(key - GLFW_KEY_1);
+    }
 }
 
 
