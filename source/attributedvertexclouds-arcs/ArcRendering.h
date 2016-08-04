@@ -17,5 +17,4 @@ protected:
     virtual void onCreateGeometry() override;
     virtual void onPrepareRendering() override;
     virtual void onFinalizeRendering() override;
-    virtual size_t primitiveCount() override;
 };

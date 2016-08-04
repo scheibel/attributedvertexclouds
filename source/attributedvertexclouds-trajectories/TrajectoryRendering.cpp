@@ -22,10 +22,6 @@ namespace
 {
 
 
-static const auto arcTessellationCount = size_t(128);
-
-static const auto gridOffset = 0.2f;
-
 static const auto lightGray = glm::vec3(234) / 275.0f;
 static const auto red = glm::vec3(196, 30, 20) / 275.0f;
 static const auto orange = glm::vec3(255, 114, 70) / 275.0f;
@@ -69,54 +65,40 @@ void TrajectoryRendering::onInitialize()
 
 void TrajectoryRendering::onCreateGeometry()
 {
-    const auto arcGridSize = m_gridSize;
-    const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
-    const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
+    const auto trajectoryGridSize = m_gridSize;
+    const auto trajectoryCount = trajectoryGridSize * trajectoryGridSize * trajectoryGridSize;
+    const auto worldScale = glm::vec3(1.0f) / glm::vec3(trajectoryGridSize, trajectoryGridSize, trajectoryGridSize);
 
     for (auto implementation : m_implementations)
     {
-        implementation->resize(arcCount);
+        implementation->resize(trajectoryCount);
     }
 
-    std::array<std::vector<float>, 7> noise;
+    std::array<std::vector<float>, 3> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(arcGridSize)+"-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(trajectoryGridSize)+"-"+std::to_string(i)+".raw");
     }
 
-    /*
 #pragma omp parallel for
-    for (size_t i = 0; i < arcCount; ++i)
+    for (size_t i = 0; i < trajectoryCount; ++i)
     {
-        const auto position = glm::ivec3(i % arcGridSize, (i / arcGridSize) % arcGridSize, i / arcGridSize / arcGridSize);
-        const auto offset = glm::vec3(
-            (position.y + position.z) % 2 ? gridOffset : 0.0f,
-            (position.x + position.z) % 2 ? gridOffset : 0.0f,
-            (position.x + position.y) % 2 ? gridOffset : 0.0f
-        );
+        const auto position = glm::ivec3(i % trajectoryGridSize, (i / trajectoryGridSize) % trajectoryGridSize, i / trajectoryGridSize / trajectoryGridSize);
 
-        Arc a;
-        a.center = glm::vec2(-0.5f, -0.5f) + (glm::vec2(position.x, position.z) + glm::vec2(offset.x, offset.z)) * glm::vec2(worldScale.x, worldScale.z);
+        TrajectoryNode t;
 
-        a.heightRange.x = -0.5f + (position.y + offset.y - 0.5f * noise[0][i]) * worldScale.y;
-        a.heightRange.y = -0.5f + (position.y + offset.y + 0.5f * noise[0][i]) * worldScale.y;
-
-        a.angleRange.x = -0.5f * glm::pi<float>() + 0.75f * glm::pi<float>() * noise[1][i];
-        a.angleRange.y = 0.25f * glm::pi<float>() + 0.5f * glm::pi<float>() * noise[2][i];
-
-        a.radiusRange.x = 0.3f * noise[3][i] * worldScale.x;
-        a.radiusRange.y = a.radiusRange.x + 0.5f * noise[4][i] * worldScale.x;
-
-        a.colorValue = noise[5][i];
-
-        a.tessellationCount = glm::round(1.0f / worldScale.x * (a.angleRange.y - a.angleRange.x) * a.radiusRange.y * glm::mix(4.0f, 64.0f, noise[6][i]) / (2.0f * glm::pi<float>()));
+        t.position = glm::vec3(-0.5f, -0.5f, -0.5f) + glm::vec3(position) * worldScale;
+        t.type = noise[0][i] > 0.5f ? 2 : 1;
+        t.incoming = glm::vec3(0.0f, 1.0f, 0.0f) * worldScale;
+        t.outgoing = glm::vec3(0.0f, 1.0f, 0.0f) * worldScale;
+        t.sizeValue = glm::mix(0.3f, 0.8f, noise[1][i]) * worldScale.x;
+        t.colorValue = noise[2][i];
 
         for (auto implementation : m_implementations)
         {
-            implementation->setArc(i, a);
+            static_cast<TrajectoryVertexCloud*>(implementation)->setTrajectoryNode(i, t);
         }
     }
-    */
 }
 
 void TrajectoryRendering::onPrepareRendering()
@@ -134,9 +116,4 @@ void TrajectoryRendering::onFinalizeRendering()
 {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, 0);
-}
-
-size_t TrajectoryRendering::primitiveCount()
-{
-    return m_gridSize;
 }

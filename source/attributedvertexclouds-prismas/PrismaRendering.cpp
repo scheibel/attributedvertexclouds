@@ -142,8 +142,3 @@ void PrismaRendering::onFinalizeRendering()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, 0);
 }
-
-size_t PrismaRendering::primitiveCount()
-{
-    return m_gridSize * m_gridSize * m_gridSize;
-}

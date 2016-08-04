@@ -126,8 +126,3 @@ void CuboidRendering::onFinalizeRendering()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, 0);
 }
-
-size_t CuboidRendering::primitiveCount()
-{
-    return m_gridSize * m_gridSize * m_gridSize;
-}

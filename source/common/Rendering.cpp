@@ -426,3 +426,8 @@ void Rendering::setGridSize(int gridSize)
 {
     m_gridSize = gridSize;
 }
+
+size_t Rendering::primitiveCount()
+{
+    return m_gridSize * m_gridSize * m_gridSize;
+}

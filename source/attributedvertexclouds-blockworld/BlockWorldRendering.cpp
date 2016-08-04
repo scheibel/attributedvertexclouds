@@ -119,8 +119,3 @@ void BlockWorldRendering::decreaseBlockThreshold()
 {
     m_blockThreshold = glm::max(m_blockThreshold-1, 0);
 }
-
-size_t BlockWorldRendering::primitiveCount()
-{
-    return m_gridSize * m_gridSize * m_gridSize;
-}

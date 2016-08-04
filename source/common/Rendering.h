@@ -74,6 +74,8 @@ protected:
     void measureGPU(const std::string & name, std::function<void()> callback, bool on) const;
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
+    size_t primitiveCount();
+
 protected:
     // Subclass interface
 
@@ -81,5 +83,4 @@ protected:
     virtual void onCreateGeometry() = 0;
     virtual void onPrepareRendering() = 0;
     virtual void onFinalizeRendering() = 0;
-    virtual size_t primitiveCount() = 0;
 };
