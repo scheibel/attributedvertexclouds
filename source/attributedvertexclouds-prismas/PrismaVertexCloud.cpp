@@ -108,7 +108,7 @@ void PrismaVertexCloud::initializeVAO()
     glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(float) * 1 * m_colorValue.size(), m_colorValue.data());
 
     glBindTexture(GL_TEXTURE_BUFFER, m_colorValueTexture);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, m_colorValueBuffer);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, m_colorValueBuffer);
 
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
     glBindTexture(GL_TEXTURE_BUFFER, 0);
