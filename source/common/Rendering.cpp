@@ -249,7 +249,7 @@ void Rendering::render()
             {
                 m_inMeasurement = false;
 
-                std::cout << "Measured " << (static_cast<float>(m_sum) / static_cast<float>(m_count)) << "ns" << " for geometry processing" << std::endl;
+                std::cout << "Measured " << (m_sum / m_count / 1000) << "µs" << " for geometry processing" << std::endl;
             }
         }
 

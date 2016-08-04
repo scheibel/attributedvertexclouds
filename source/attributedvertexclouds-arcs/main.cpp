@@ -177,7 +177,19 @@ int main(int argc, char ** argv)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow * window = glfwCreateWindow(canvasWidth, canvasHeight, "", fullScreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    GLFWwindow * window = nullptr;
+
+    if (fullScreen)
+    {
+        const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+        window = glfwCreateWindow(mode->width, mode->height, "", glfwGetPrimaryMonitor(), nullptr);
+    }
+    else
+    {
+        window = glfwCreateWindow(canvasWidth, canvasHeight, "", nullptr, nullptr);
+    }
+
     if (!window)
     {
         glfwTerminate();
