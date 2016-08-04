@@ -155,6 +155,7 @@ int main(int argc, char ** argv)
 
     glbinding::Binding::initialize(false);
 
+#ifndef NDEBUG
     glbinding::setAfterCallback([](const glbinding::FunctionCall & functionCall) {
         gl::GLenum error = glbinding::Binding::GetError.directCall();
 
@@ -163,6 +164,7 @@ int main(int argc, char ** argv)
             throw error;
         }
     });
+#endif
 
     glbinding::setCallbackMaskExcept(glbinding::CallbackMask::After, { "glGetError" });
 
