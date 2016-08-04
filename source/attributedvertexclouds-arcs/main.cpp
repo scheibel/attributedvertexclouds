@@ -81,11 +81,40 @@ void errorCallback(int errnum, const char * errmsg)
 }
 
 
-int main(int /*argc*/, char ** /*argv*/)
+int main(int argc, char ** argv)
 {
     if (!glfwInit())
     {
         return 1;
+    }
+
+    int gridSize = 16;
+    bool fullScreen = false;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string argument(argv[i]);
+
+        if (argument == "f")
+        {
+            fullScreen = true;
+        }
+        else if (argument == "s")
+        {
+            gridSize = 16;
+        }
+        else if (argument == "m")
+        {
+            gridSize = 32;
+        }
+        else if (argument == "l")
+        {
+            gridSize = 48;
+        }
+        else if (argument == "xl")
+        {
+            gridSize = 100;
+        }
     }
 
     std::cout << "Choose Techniques" << std::endl;
@@ -111,7 +140,7 @@ int main(int /*argc*/, char ** /*argv*/)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow * window = glfwCreateWindow(canvasWidth, canvasHeight, "", nullptr, nullptr);
+    GLFWwindow * window = glfwCreateWindow(canvasWidth, canvasHeight, "", fullScreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -139,6 +168,8 @@ int main(int /*argc*/, char ** /*argv*/)
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
+
+    rendering.setGridSize(gridSize);
     rendering.resize(width, height);
     rendering.initialize();
 

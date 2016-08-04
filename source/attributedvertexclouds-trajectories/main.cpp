@@ -151,6 +151,7 @@ int main(int argc, char ** argv)
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
+
     rendering.setGridSize(gridSize);
     rendering.resize(width, height);
     rendering.initialize();
