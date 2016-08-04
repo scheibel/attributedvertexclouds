@@ -19,6 +19,8 @@ out Segment
 
 void main()
 {
+    gl_Position = vec4(in_position, 1.0);
+    
     segment.position = in_position;
     segment.type = in_type;
     segment.incoming = in_incoming;

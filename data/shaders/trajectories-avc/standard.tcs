@@ -26,10 +26,10 @@ void main()
 {
     if (gl_InvocationID == 0)
     {
-        gl_TessLevelOuter[0] = 1;
-        gl_TessLevelOuter[1] = 1;
+        gl_TessLevelOuter[0] = 8;
+        gl_TessLevelOuter[1] = 8;
         
-        attributes.position = segment[0].position;
+        attributes.position = gl_in[0].gl_Position.xyz;
         attributes.type = segment[0].type;
         attributes.incoming = segment[0].incoming;
         attributes.outgoing = segment[0].outgoing;
