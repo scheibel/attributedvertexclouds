@@ -83,6 +83,11 @@ void Rendering::initialize()
 
 void Rendering::reloadShaders()
 {
+    if (m_postprocessing->initialized())
+    {
+        m_postprocessing->loadShader();
+    }
+
     for (auto implementation : m_implementations)
     {
         if (implementation->initialized())
@@ -90,8 +95,6 @@ void Rendering::reloadShaders()
             implementation->loadShader();
         }
     }
-
-    m_postprocessing->loadShader();
 }
 
 void Rendering::cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & up) const
