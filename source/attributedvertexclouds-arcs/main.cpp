@@ -52,6 +52,17 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
         rendering.startFPSMeasuring();
     }
 
+    if (key == GLFW_KEY_F7 && action == GLFW_RELEASE)
+    {
+        std::cout << "Start Performance measuring" << std::endl;
+        rendering.startPerformanceMeasuring();
+    }
+
+    if (key == GLFW_KEY_F8 && action == GLFW_RELEASE)
+    {
+        rendering.spaceMeasurement();
+    }
+
     if (key == GLFW_KEY_R && action == GLFW_RELEASE)
     {
         rendering.toggleRasterizerDiscard();
@@ -135,8 +146,9 @@ int main(int argc, char ** argv)
     std::cout << " [F4] Preset 3" << std::endl;
     std::cout << std::endl;
     std::cout << "Measuring" << std::endl;
-    std::cout << " [F6] Performance Measurement" << std::endl;
-    std::cout << " [F7] Memory Comparison" << std::endl;
+    std::cout << " [F6] FPS Measurement" << std::endl;
+    std::cout << " [F7] Performance Measurement" << std::endl;
+    std::cout << " [F8] Memory Comparison" << std::endl;
     std::cout << std::endl;
     std::cout << "Debugging" << std::endl;
     std::cout << " [r] Enable/Disable rasterizer" << std::endl;

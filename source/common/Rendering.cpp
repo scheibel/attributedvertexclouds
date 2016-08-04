@@ -20,7 +20,8 @@ using namespace gl;
 namespace
 {
 
-
+static const auto warmupCount = size_t(1000);
+static const auto measureCount = size_t(1000);
 static const auto fpsSampleCount = size_t(100);
 
 
@@ -30,13 +31,17 @@ static const auto fpsSampleCount = size_t(100);
 Rendering::Rendering()
 : m_current(nullptr)
 , m_postprocessing(nullptr)
-, m_query(0)
 , m_width(0)
 , m_height(0)
 , m_gridSize(32)
 , m_usePostprocessing(false)
 , m_rasterizerDiscard(false)
+, m_query(0)
 , m_fpsSamples(fpsSampleCount+1)
+, m_inMeasurement(false)
+, m_count(0)
+, m_warmupCount(0)
+, m_sum(0)
 {
 }
 
@@ -99,6 +104,15 @@ void Rendering::cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & 
     static const auto up0 = glm::vec3(0.0f, 1.0f, 0.0f);
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
+
+    if (m_inMeasurement)
+    {
+        eye = eye0;
+        center = center0;
+        up = up0;
+
+        return;
+    }
 
     switch (m_cameraSetting)
     {
@@ -193,6 +207,43 @@ void Rendering::setTechnique(int i)
 
 void Rendering::render()
 {
+    if (m_inMeasurement)
+    {
+        m_current->initialize();
+
+        glViewport(0, 0, m_width, m_height);
+
+        glEnable(GL_RASTERIZER_DISCARD);
+
+        prepareRendering();
+
+        m_sum += measureGPU([this]() {
+            m_current->render();
+        }, m_warmupCount == 0);
+
+        if (m_warmupCount > 0)
+        {
+            --m_warmupCount;
+        }
+        else
+        {
+            ++m_count;
+
+            if (m_count == measureCount)
+            {
+                m_inMeasurement = false;
+
+                std::cout << "Measured " << (static_cast<float>(m_sum) / static_cast<float>(m_count)) << "ns" << " for geometry processing" << std::endl;
+            }
+        }
+
+        finalizeRendering();
+
+        glDisable(GL_RASTERIZER_DISCARD);
+
+        return;
+    }
+
     if (m_fpsSamples == fpsSampleCount)
     {
         const auto end = std::chrono::high_resolution_clock::now();
@@ -282,27 +333,13 @@ void Rendering::spaceMeasurement()
     }
 }
 
-void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
+size_t Rendering::measureGPU(std::function<void()> callback, bool on) const
 {
     if (!on)
     {
-        return callback();
-    }
+        callback();
 
-    const auto start = std::chrono::high_resolution_clock::now();
-
-    callback();
-
-    const auto end = std::chrono::high_resolution_clock::now();
-
-    std::cout << name << ": " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns" << std::endl;
-}
-
-void Rendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
-{
-    if (!on)
-    {
-        return callback();
+        return 0;
     }
 
     glBeginQuery(gl::GL_TIME_ELAPSED, m_query);
@@ -320,7 +357,45 @@ void Rendering::measureGPU(const std::string & name, std::function<void()> callb
     int value;
     glGetQueryObjectiv(m_query, gl::GL_QUERY_RESULT, &value);
 
-    std::cout << name << ": " << value << "ns" << std::endl;
+    return value;
+}
+
+size_t Rendering::measureCPU(std::function<void()> callback, bool on) const
+{
+    if (!on)
+    {
+        callback();
+
+        return 0;
+    }
+
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    callback();
+
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
+{
+    if (!on)
+    {
+        return callback();
+    }
+
+    std::cout << name << ": " << measureCPU(callback, on) << "ns" << std::endl;
+}
+
+void Rendering::measureGPU(const std::string & name, std::function<void()> callback, bool on) const
+{
+    if (!on)
+    {
+        return callback();
+    }
+
+    std::cout << name << ": " << measureGPU(callback, on) << "ns" << std::endl;
 }
 
 void Rendering::toggleRasterizerDiscard()
@@ -332,6 +407,14 @@ void Rendering::startFPSMeasuring()
 {
     m_fpsSamples = 0;
     m_fpsMeasurementStart = std::chrono::high_resolution_clock::now();
+}
+
+void Rendering::startPerformanceMeasuring()
+{
+    m_inMeasurement = true;
+    m_count = 0;
+    m_warmupCount = warmupCount;
+    m_sum = 0;
 }
 
 void Rendering::togglePostprocessing()
