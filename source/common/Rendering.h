@@ -2,6 +2,8 @@
 #include <chrono>
 #include <vector>
 
+#include <glm/vec3.hpp>
+
 #include <glbinding/gl/types.h>
 
 
@@ -20,6 +22,7 @@ public:
     void resize(int w, int h);
     void render();
 
+    void setCameraTechnique(int i);
     void setTechnique(int i);
     void toggleRasterizerDiscard();
     void togglePostprocessing();
@@ -33,6 +36,7 @@ public:
     void measureCPU(const std::string & name, std::function<void()> callback, bool on) const;
 
 protected:
+    int m_cameraSetting;
     Implementation * m_current;
     Postprocessing * m_postprocessing;
     std::vector<Implementation *> m_implementations;
@@ -50,6 +54,8 @@ protected:
 
     size_t m_fpsSamples;
     std::chrono::high_resolution_clock::time_point m_fpsMeasurementStart;
+
+    void cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & up) const;
 
     void prepareRendering();
     void finalizeRendering();

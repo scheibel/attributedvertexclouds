@@ -66,6 +66,11 @@ void keyCallback(GLFWwindow * /*window*/, int key, int /*scancode*/, int action,
     {
         rendering.setTechnique(key - GLFW_KEY_1);
     }
+
+    if (key >= GLFW_KEY_F1 && key <= GLFW_KEY_F4 && action == GLFW_RELEASE)
+    {
+        rendering.setCameraTechnique(key - GLFW_KEY_F1);
+    }
 }
 
 

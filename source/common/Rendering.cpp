@@ -89,16 +89,57 @@ void Rendering::reloadShaders()
     m_postprocessing->loadShader();
 }
 
-void Rendering::prepareRendering()
+void Rendering::cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & up) const
 {
-    static const auto eye = glm::vec3(1.0f, 1.0f, 1.0f);
-    static const auto center = glm::vec3(0.0f, 0.0f, 0.0f);
-    static const auto up = glm::vec3(0.0f, 1.0f, 0.0f);
+    static const auto eye0 = glm::vec3(1.1f, 1.1f, 1.1f);
+    static const auto eye1 = glm::vec3(1.2f, 0.0f, 1.2f);
+    static const auto eye2 = glm::vec3(1.4f, 0.0f, 0.0f);
+
+    static const auto center0 = glm::vec3(0.0f, 0.0f, 0.0f);
+    static const auto up0 = glm::vec3(0.0f, 1.0f, 0.0f);
 
     const auto f = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_start).count()) / 1000.0f;
 
-    const auto view = glm::lookAt(cameraPath(eye, f), center, up);
-    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.05f, 2.0f) * view;
+    switch (m_cameraSetting)
+    {
+    case 0:
+        eye = cameraPath(eye0, f);
+        center = center0;
+        up = up0;
+        break;
+    case 1:
+        eye = eye0;
+        center = center0;
+        up = up0;
+        break;
+    case 2:
+        eye = eye1;
+        center = center0;
+        up = up0;
+        break;
+    case 3:
+        eye = eye2;
+        center = center0;
+        up = up0;
+        break;
+    default:
+        eye = cameraPath(eye0, f);
+        center = center0;
+        up = up0;
+        break;
+    }
+}
+
+void Rendering::prepareRendering()
+{
+    auto eye = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto center = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto up = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    cameraPosition(eye, center, up);
+
+    const auto view = glm::lookAt(eye, center, up);
+    const auto viewProjection = glm::perspectiveFov(glm::radians(45.0f), float(m_width), float(m_height), 0.05f, 2.5f) * view;
 
     GLuint program = m_current->program();
     const auto viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
@@ -126,6 +167,16 @@ void Rendering::resize(int w, int h)
     {
         m_postprocessing->resize(m_width, m_height);
     }
+}
+
+void Rendering::setCameraTechnique(int i)
+{
+    if (i < 0 || i >= 4)
+    {
+        return;
+    }
+
+    m_cameraSetting = i;
 }
 
 void Rendering::setTechnique(int i)
