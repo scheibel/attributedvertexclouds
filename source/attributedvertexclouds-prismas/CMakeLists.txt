@@ -42,6 +42,8 @@ set(sources
     PrismaImplementation.cpp
     PrismaTriangles.h
     PrismaTriangles.cpp
+    PrismaTriangleStrip.h
+    PrismaTriangleStrip.cpp
     PrismaVertexCloud.h
     PrismaVertexCloud.cpp
 )

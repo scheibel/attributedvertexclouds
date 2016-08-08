@@ -14,7 +14,7 @@
 
 #include "PrismaVertexCloud.h"
 #include "PrismaTriangles.h"
-//#include "PrismaTriangleStrip.h"
+#include "PrismaTriangleStrip.h"
 //#include "PrismaInstancing.h"
 
 
@@ -49,7 +49,7 @@ PrismaRendering::~PrismaRendering()
 
 void PrismaRendering::onInitialize()
 {
-    addImplementation(new PrismaTriangles);
+    addImplementation(new PrismaTriangleStrip);
     addImplementation(new PrismaVertexCloud);
 
     glGenTextures(1, &m_gradientTexture);
