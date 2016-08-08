@@ -13,7 +13,7 @@
 #include "common.h"
 
 #include "PrismaVertexCloud.h"
-//#include "PrismaTriangles.h"
+#include "PrismaTriangles.h"
 //#include "PrismaTriangleStrip.h"
 //#include "PrismaInstancing.h"
 
@@ -49,6 +49,7 @@ PrismaRendering::~PrismaRendering()
 
 void PrismaRendering::onInitialize()
 {
+    addImplementation(new PrismaTriangles);
     addImplementation(new PrismaVertexCloud);
 
     glGenTextures(1, &m_gradientTexture);
@@ -86,7 +87,7 @@ void PrismaRendering::onCreateGeometry()
         noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(prismaGridSize)+"-"+std::to_string(i)+".raw");
     }
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (size_t i = 0; i < prismaCount; ++i)
     {
         const auto position = glm::ivec3(i % prismaGridSize, (i / prismaGridSize) % prismaGridSize, i / prismaGridSize / prismaGridSize);

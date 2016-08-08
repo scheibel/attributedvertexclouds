@@ -70,7 +70,7 @@ void CuboidTriangles::initializeVAO()
 
 bool CuboidTriangles::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/cuboids-triangles/standard.vert");
+    const auto vertexShaderSource = textFromFile("data/shaders/visualization-triangles/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
