@@ -116,8 +116,7 @@ void PrismaTriangleStrip::setPrisma(size_t index, const Prisma & prisma)
         return;
     }
 
-    //const auto vertexCount = 2 + 4 * prisma.points.size();
-    const auto vertexCount = 2 + 2 * prisma.points.size();
+    const auto vertexCount = 2 + 4 * prisma.points.size();
 
     m_mutex.lock();
 
@@ -130,8 +129,8 @@ void PrismaTriangleStrip::setPrisma(size_t index, const Prisma & prisma)
     m_multiStarts.at(3 * index + 2) = bottomFaceStartIndex;
 
     m_multiCounts.at(3 * index + 0) = 2 + 2 * prisma.points.size();
-    m_multiCounts.at(3 * index + 1) = 0;//prisma.points.size();
-    m_multiCounts.at(3 * index + 2) = 0;//prisma.points.size();
+    m_multiCounts.at(3 * index + 1) = prisma.points.size();
+    m_multiCounts.at(3 * index + 2) = prisma.points.size();
 
     m_position.resize(m_position.size() + vertexCount);
     m_normal.resize(m_normal.size() + vertexCount);
@@ -140,8 +139,7 @@ void PrismaTriangleStrip::setPrisma(size_t index, const Prisma & prisma)
     // Side faces
     for (auto i = size_t(0); i <= prisma.points.size(); ++i)
     {
-        // Side face
-        const auto & current = prisma.points[i];
+        const auto & current = prisma.points[i % prisma.points.size()];
         const auto & previous = prisma.points[(i + prisma.points.size() - 1) % prisma.points.size()];
 
         const auto normal = glm::cross(glm::vec3(current.x - previous.x, 0.0f, current.y - previous.y), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -155,31 +153,51 @@ void PrismaTriangleStrip::setPrisma(size_t index, const Prisma & prisma)
     }
 
     // Top face
-    //for (auto i = size_t(0); i < prisma.points.size(); ++i)
+    for (auto i = size_t(0); i < prisma.points.size(); ++i)
     {
-        /*m_position[topFaceStartIndex + 3*(i-2)+0] = glm::vec3(prisma.points[i-1].x, prisma.heightRange.y, prisma.points[i-1].y);
-        m_position[topFaceStartIndex + 3*(i-2)+1] = glm::vec3(prisma.points[0].x, prisma.heightRange.y, prisma.points[0].y);
-        m_position[topFaceStartIndex + 3*(i-2)+2] = glm::vec3(prisma.points[i].x, prisma.heightRange.y, prisma.points[i].y);
-        m_normal[topFaceStartIndex + 3*(i-2)+0] = glm::vec3(0.0f, 1.0f, 0.0f);
-        m_normal[topFaceStartIndex + 3*(i-2)+1] = glm::vec3(0.0f, 1.0f, 0.0f);
-        m_normal[topFaceStartIndex + 3*(i-2)+2] = glm::vec3(0.0f, 1.0f, 0.0f);
-        m_colorValue[topFaceStartIndex + 3*(i-2)+0] = prisma.colorValue;
-        m_colorValue[topFaceStartIndex + 3*(i-2)+1] = prisma.colorValue;
-        m_colorValue[topFaceStartIndex + 3*(i-2)+2] = prisma.colorValue;*/
+        if (i > 0)
+        {
+            auto j = i / 2;
+            if (i % 2)
+            {
+                m_position[topFaceStartIndex + i] = glm::vec3(prisma.points[prisma.points.size() - j - 1].x, prisma.heightRange.y, prisma.points[prisma.points.size() - j - 1].y);
+            }
+            else
+            {
+                m_position[topFaceStartIndex + i] = glm::vec3(prisma.points[j].x, prisma.heightRange.y, prisma.points[j].y);
+            }
+        }
+        else
+        {
+            m_position[topFaceStartIndex + i] = glm::vec3(prisma.points[i].x, prisma.heightRange.y, prisma.points[i].y);
+        }
+
+        m_normal[topFaceStartIndex + i] = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_colorValue[topFaceStartIndex + i] = prisma.colorValue;
     }
 
     // Bottom face
-    //for (auto i = size_t(0); i < prisma.points.size(); ++i)
+    for (auto i = size_t(0); i < prisma.points.size(); ++i)
     {
-        /*m_position[bottomFaceStartIndex + 3*(i-2)+0] = glm::vec3(prisma.points[i].x, prisma.heightRange.x, prisma.points[i].y);
-        m_position[bottomFaceStartIndex + 3*(i-2)+1] = glm::vec3(prisma.points[0].x, prisma.heightRange.x, prisma.points[0].y);
-        m_position[bottomFaceStartIndex + 3*(i-2)+2] = glm::vec3(prisma.points[i-1].x, prisma.heightRange.x, prisma.points[i-1].y);
-        m_normal[bottomFaceStartIndex + 3*(i-2)+0] = glm::vec3(0.0f, -1.0f, 0.0f);
-        m_normal[bottomFaceStartIndex + 3*(i-2)+1] = glm::vec3(0.0f, -1.0f, 0.0f);
-        m_normal[bottomFaceStartIndex + 3*(i-2)+2] = glm::vec3(0.0f, -1.0f, 0.0f);
-        m_colorValue[bottomFaceStartIndex + 3*(i-2)+0] = prisma.colorValue;
-        m_colorValue[bottomFaceStartIndex + 3*(i-2)+1] = prisma.colorValue;
-        m_colorValue[bottomFaceStartIndex + 3*(i-2)+2] = prisma.colorValue;*/
+        if (i > 0)
+        {
+            auto j = i / 2;
+            if (i % 2)
+            {
+                m_position[bottomFaceStartIndex + i] = glm::vec3(prisma.points[j].x, prisma.heightRange.x, prisma.points[j].y);
+            }
+            else
+            {
+                m_position[bottomFaceStartIndex + i] = glm::vec3(prisma.points[prisma.points.size() - j - 1].x, prisma.heightRange.x, prisma.points[prisma.points.size() - j - 1].y);
+            }
+        }
+        else
+        {
+            m_position[bottomFaceStartIndex + i] = glm::vec3(prisma.points[i].x, prisma.heightRange.x, prisma.points[i].y);
+        }
+
+        m_normal[bottomFaceStartIndex + i] = glm::vec3(0.0f, -1.0f, 0.0f);
+        m_colorValue[bottomFaceStartIndex + i] = prisma.colorValue;
     }
 
     m_mutex.unlock();

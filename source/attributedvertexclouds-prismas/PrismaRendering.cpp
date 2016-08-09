@@ -49,6 +49,7 @@ PrismaRendering::~PrismaRendering()
 
 void PrismaRendering::onInitialize()
 {
+    addImplementation(new PrismaTriangles);
     addImplementation(new PrismaTriangleStrip);
     addImplementation(new PrismaVertexCloud);
 
