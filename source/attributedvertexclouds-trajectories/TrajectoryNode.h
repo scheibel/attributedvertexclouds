@@ -9,10 +9,9 @@ class TrajectoryNode
 public:
     TrajectoryNode();
 
+    int trajectoryID;
     glm::vec3 position;
     int type;
-    glm::vec3 incoming;
-    glm::vec3 outgoing;
     float colorValue;
     float sizeValue;
 };

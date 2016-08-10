@@ -82,17 +82,16 @@ void TrajectoryRendering::onCreateGeometry()
     }
 
 #pragma omp parallel for
-    for (size_t i = 0; i < 1; ++i)
+    for (size_t i = 0; i < trajectoryCount; ++i)
     {
         const auto position = glm::ivec3(i % trajectoryGridSize, (i / trajectoryGridSize) % trajectoryGridSize, i / trajectoryGridSize / trajectoryGridSize);
 
         TrajectoryNode t;
 
         t.position = glm::vec3(-0.5f, -0.5f, -0.5f) + glm::vec3(position) * worldScale;
+        t.trajectoryID = position.z * trajectoryGridSize + position.x;
         //t.type = noise[0][i] > 0.5f ? 2 : 1;
         t.type = 1;
-        t.incoming = glm::vec3(0.0f, 1.0f, 0.0f) * worldScale;
-        t.outgoing = glm::vec3(0.0f, 1.0f, 0.0f) * worldScale;
         t.sizeValue = glm::mix(0.3f, 0.8f, noise[1][i]) * worldScale.x;
         t.colorValue = noise[2][i];
 

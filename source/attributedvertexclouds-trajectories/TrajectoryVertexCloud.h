@@ -38,6 +38,7 @@ public:
 
 public:
     std::vector<glm::vec3> m_position;
+    std::vector<int> m_trajectoryID;
     std::vector<int> m_type;
     std::vector<glm::vec3> m_incoming;
     std::vector<glm::vec3> m_outgoing;
