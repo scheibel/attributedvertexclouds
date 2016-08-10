@@ -1,5 +1,5 @@
 
-#include "PrismaVertexCloud.h"
+#include "PolygonVertexCloud.h"
 
 #include <glbinding/gl/gl.h>
 
@@ -7,8 +7,8 @@
 
 using namespace gl;
 
-PrismaVertexCloud::PrismaVertexCloud()
-: PrismaImplementation("Attributed Vertex Cloud")
+PolygonVertexCloud::PolygonVertexCloud()
+: PolygonImplementation("Attributed Vertex Cloud")
 , m_vertices(0)
 , m_centerHeightRangeBuffer(0)
 , m_colorValueBuffer(0)
@@ -21,7 +21,7 @@ PrismaVertexCloud::PrismaVertexCloud()
 {
 }
 
-PrismaVertexCloud::~PrismaVertexCloud()
+PolygonVertexCloud::~PolygonVertexCloud()
 {
     glDeleteBuffers(1, &m_vertices);
     glDeleteBuffers(1, &m_centerHeightRangeBuffer);
@@ -38,7 +38,7 @@ PrismaVertexCloud::~PrismaVertexCloud()
     glDeleteProgram(m_program);
 }
 
-void PrismaVertexCloud::onInitialize()
+void PolygonVertexCloud::onInitialize()
 {
     glGenBuffers(1, &m_vertices);
     glGenBuffers(1, &m_centerHeightRangeBuffer);
@@ -64,7 +64,7 @@ void PrismaVertexCloud::onInitialize()
     loadShader();
 }
 
-void PrismaVertexCloud::initializeVAO()
+void PolygonVertexCloud::initializeVAO()
 {
     glBindVertexArray(m_vao);
 
@@ -72,7 +72,7 @@ void PrismaVertexCloud::initializeVAO()
     glBufferData(GL_ARRAY_BUFFER, size() * vertexByteSize(), nullptr, GL_STATIC_DRAW);
 
     glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 0, size() * sizeof(float) * 2, m_positions.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 2, size() * sizeof(float) * 1, m_prismaIndices.data());
+    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 2, size() * sizeof(float) * 1, m_polygonIndices.data());
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), reinterpret_cast<void*>(size() * sizeof(float) * 0));
     glVertexAttribIPointer(1, 1, GL_INT, sizeof(int), reinterpret_cast<void*>(size() * sizeof(float) * 2));
@@ -114,9 +114,9 @@ void PrismaVertexCloud::initializeVAO()
     glBindTexture(GL_TEXTURE_BUFFER, 0);
 }
 
-bool PrismaVertexCloud::loadShader()
+bool PolygonVertexCloud::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/prismas-avc/standard.vert");
+    const auto vertexShaderSource = textFromFile("data/shaders/polygons-avc/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
@@ -126,7 +126,7 @@ bool PrismaVertexCloud::loadShader()
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
 
 
-    const auto geometryShaderSource = textFromFile("data/shaders/prismas-avc/standard.geom");
+    const auto geometryShaderSource = textFromFile("data/shaders/polygons-avc/standard.geom");
     const auto geometryShaderSource_ptr = geometryShaderSource.c_str();
     if(geometryShaderSource_ptr)
         glShaderSource(m_geometryShader, 1, &geometryShaderSource_ptr, 0);
@@ -165,13 +165,13 @@ bool PrismaVertexCloud::loadShader()
     return true;
 }
 
-void PrismaVertexCloud::setPrisma(size_t index, const Prisma & prisma)
+void PolygonVertexCloud::setPolygon(size_t index, const Polygon & polygon)
 {
     m_center[index] = glm::vec2(0.0f, 0.0f);
-    m_heightRange[index] = prisma.heightRange;
-    m_colorValue[index] = prisma.colorValue;
+    m_heightRange[index] = polygon.heightRange;
+    m_colorValue[index] = polygon.colorValue;
 
-    if (prisma.points.empty())
+    if (polygon.points.empty())
     {
         return;
     }
@@ -179,63 +179,63 @@ void PrismaVertexCloud::setPrisma(size_t index, const Prisma & prisma)
     m_mutex.lock();
 
     const auto firstIndex = m_positions.size();
-    m_positions.resize(m_positions.size() + prisma.points.size() + 1);
-    m_prismaIndices.resize(m_prismaIndices.size() + prisma.points.size() + 1);
+    m_positions.resize(m_positions.size() + polygon.points.size() + 1);
+    m_polygonIndices.resize(m_polygonIndices.size() + polygon.points.size() + 1);
 
-    for (auto i = size_t(0); i < prisma.points.size(); ++i)
+    for (auto i = size_t(0); i < polygon.points.size(); ++i)
     {
-        m_positions.at(firstIndex + i) = prisma.points.at(i);
-        m_prismaIndices.at(firstIndex + i) = index;
+        m_positions.at(firstIndex + i) = polygon.points.at(i);
+        m_polygonIndices.at(firstIndex + i) = index;
 
-        m_center[index] += prisma.points.at(i);
+        m_center[index] += polygon.points.at(i);
     }
 
-    m_positions.at(firstIndex + prisma.points.size()) = prisma.points.front();
-    m_prismaIndices.at(firstIndex + prisma.points.size()) = index;
+    m_positions.at(firstIndex + polygon.points.size()) = polygon.points.front();
+    m_polygonIndices.at(firstIndex + polygon.points.size()) = index;
 
     m_mutex.unlock();
 
-    m_center[index] /= glm::vec2(prisma.points.size());
+    m_center[index] /= glm::vec2(polygon.points.size());
 }
 
-size_t PrismaVertexCloud::size() const
+size_t PolygonVertexCloud::size() const
 {
     return m_positions.size();
 }
 
-size_t PrismaVertexCloud::verticesCount() const
+size_t PolygonVertexCloud::verticesCount() const
 {
     return size();
 }
 
-size_t PrismaVertexCloud::staticByteSize() const
+size_t PolygonVertexCloud::staticByteSize() const
 {
     return sizeof(float) * 6 * m_center.size();
 }
 
-size_t PrismaVertexCloud::byteSize() const
+size_t PolygonVertexCloud::byteSize() const
 {
     return size() * vertexByteSize();
 }
 
-size_t PrismaVertexCloud::vertexByteSize() const
+size_t PolygonVertexCloud::vertexByteSize() const
 {
     return sizeof(float) * componentCount();
 }
 
-size_t PrismaVertexCloud::componentCount() const
+size_t PolygonVertexCloud::componentCount() const
 {
     return 3;
 }
 
-void PrismaVertexCloud::resize(size_t count)
+void PolygonVertexCloud::resize(size_t count)
 {
     m_center.resize(count);
     m_heightRange.resize(count);
     m_colorValue.resize(count);
 }
 
-void PrismaVertexCloud::onRender()
+void PolygonVertexCloud::onRender()
 {
     glBindVertexArray(m_vao);
 
@@ -273,7 +273,7 @@ void PrismaVertexCloud::onRender()
     glBindVertexArray(0);
 }
 
-gl::GLuint PrismaVertexCloud::program() const
+gl::GLuint PolygonVertexCloud::program() const
 {
     return m_program;
 }

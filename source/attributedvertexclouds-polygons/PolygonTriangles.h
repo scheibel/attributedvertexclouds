@@ -8,22 +8,22 @@
 
 #include <glbinding/gl/types.h>
 
-#include "Prisma.h"
-#include "PrismaImplementation.h"
+#include "Polygon.h"
+#include "PolygonImplementation.h"
 
 
-class PrismaVertexCloud : public PrismaImplementation
+class PolygonTriangles : public PolygonImplementation
 {
 public:
-    PrismaVertexCloud();
-    ~PrismaVertexCloud();
+    PolygonTriangles();
+    ~PolygonTriangles();
 
     virtual void onInitialize() override;
     virtual void onRender() override;
 
     virtual bool loadShader() override;
 
-    virtual void setPrisma(size_t index, const Prisma & prisma) override;
+    virtual void setPolygon(size_t index, const Polygon & polygon) override;
 
     virtual size_t size() const override;
     virtual size_t verticesCount() const override;
@@ -36,23 +36,15 @@ public:
 
     virtual gl::GLuint program() const override;
 public:
-    std::vector<glm::vec2> m_center;
-    std::vector<glm::vec2> m_heightRange;
+    std::vector<glm::vec3> m_position;
+    std::vector<glm::vec3> m_normal;
     std::vector<float> m_colorValue;
 
-    std::vector<glm::vec2> m_positions;
-    std::vector<int> m_prismaIndices;
-
     gl::GLuint m_vertices;
-    gl::GLuint m_centerHeightRangeBuffer;
-    gl::GLuint m_colorValueBuffer;
-    gl::GLuint m_centerHeightRangeTexture;
-    gl::GLuint m_colorValueTexture;
 
     gl::GLuint m_vao;
 
     gl::GLuint m_vertexShader;
-    gl::GLuint m_geometryShader;
     gl::GLuint m_fragmentShader;
 
     gl::GLuint m_program;

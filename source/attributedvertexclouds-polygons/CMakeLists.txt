@@ -15,7 +15,7 @@ find_package(OpenMP QUIET)
 # 
 
 # Target name
-set(target attributedvertexclouds-prismas)
+set(target attributedvertexclouds-polygons)
 
 # Exit here if required dependencies are not met
 message(STATUS "Example ${target}")
@@ -32,20 +32,20 @@ endif()
 set(sources
     main.cpp
     
-    PrismaRendering.h
-    PrismaRendering.cpp
+    PolygonRendering.h
+    PolygonRendering.cpp
     
-    Prisma.h
-    Prisma.cpp
+    Polygon.h
+    Polygon.cpp
     
-    PrismaImplementation.h
-    PrismaImplementation.cpp
-    PrismaTriangles.h
-    PrismaTriangles.cpp
-    PrismaTriangleStrip.h
-    PrismaTriangleStrip.cpp
-    PrismaVertexCloud.h
-    PrismaVertexCloud.cpp
+    PolygonImplementation.h
+    PolygonImplementation.cpp
+    PolygonTriangles.h
+    PolygonTriangles.cpp
+    PolygonTriangleStrip.h
+    PolygonTriangleStrip.cpp
+    PolygonVertexCloud.h
+    PolygonVertexCloud.cpp
 )
 
 

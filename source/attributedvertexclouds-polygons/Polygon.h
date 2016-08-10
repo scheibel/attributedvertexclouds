@@ -5,10 +5,10 @@
 
 #include <glm/vec2.hpp>
 
-class Prisma
+class Polygon
 {
 public:
-    Prisma();
+    Polygon();
 
     std::vector<glm::vec2> points;
     glm::vec2 heightRange;

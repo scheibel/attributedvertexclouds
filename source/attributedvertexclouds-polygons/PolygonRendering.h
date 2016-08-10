@@ -4,11 +4,11 @@
 #include "Rendering.h"
 
 
-class PrismaRendering : public Rendering
+class PolygonRendering : public Rendering
 {
 public:
-    PrismaRendering();
-    virtual ~PrismaRendering();
+    PolygonRendering();
+    virtual ~PolygonRendering();
 
 protected:
     gl::GLuint m_gradientTexture;

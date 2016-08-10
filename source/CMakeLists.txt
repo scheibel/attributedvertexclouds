@@ -21,7 +21,7 @@ set(IDE_FOLDER "Examples")
 add_subdirectory(attributedvertexclouds-blockworld)
 add_subdirectory(attributedvertexclouds-cuboids)
 add_subdirectory(attributedvertexclouds-arcs)
-add_subdirectory(attributedvertexclouds-prismas)
+add_subdirectory(attributedvertexclouds-polygons)
 add_subdirectory(attributedvertexclouds-trajectories)
 
 # Tools

@@ -8,22 +8,22 @@
 
 #include <glbinding/gl/types.h>
 
-#include "Prisma.h"
-#include "PrismaImplementation.h"
+#include "Polygon.h"
+#include "PolygonImplementation.h"
 
 
-class PrismaTriangleStrip : public PrismaImplementation
+class PolygonTriangleStrip : public PolygonImplementation
 {
 public:
-    PrismaTriangleStrip();
-    ~PrismaTriangleStrip();
+    PolygonTriangleStrip();
+    ~PolygonTriangleStrip();
 
     virtual void onInitialize() override;
     virtual void onRender() override;
 
     virtual bool loadShader() override;
 
-    virtual void setPrisma(size_t index, const Prisma & prisma) override;
+    virtual void setPolygon(size_t index, const Polygon & polygon) override;
 
     virtual size_t size() const override;
     virtual size_t verticesCount() const override;

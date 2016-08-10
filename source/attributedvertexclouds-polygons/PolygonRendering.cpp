@@ -1,5 +1,5 @@
 
-#include "PrismaRendering.h"
+#include "PolygonRendering.h"
 
 #include <iostream>
 #include <chrono>
@@ -12,10 +12,10 @@
 
 #include "common.h"
 
-#include "PrismaVertexCloud.h"
-#include "PrismaTriangles.h"
-#include "PrismaTriangleStrip.h"
-//#include "PrismaInstancing.h"
+#include "PolygonVertexCloud.h"
+#include "PolygonTriangles.h"
+#include "PolygonTriangleStrip.h"
+//#include "PolygonInstancing.h"
 
 
 using namespace gl;
@@ -36,22 +36,22 @@ static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
 } // namespace
 
 
-PrismaRendering::PrismaRendering()
-: Rendering("Prismas")
+PolygonRendering::PolygonRendering()
+: Rendering("Polygons")
 , m_gradientTexture(0)
 {
 }
 
-PrismaRendering::~PrismaRendering()
+PolygonRendering::~PolygonRendering()
 {
     glDeleteTextures(1, &m_gradientTexture);
 }
 
-void PrismaRendering::onInitialize()
+void PolygonRendering::onInitialize()
 {
-    addImplementation(new PrismaTriangles);
-    addImplementation(new PrismaTriangleStrip);
-    addImplementation(new PrismaVertexCloud);
+    addImplementation(new PolygonTriangles);
+    addImplementation(new PolygonTriangleStrip);
+    addImplementation(new PolygonVertexCloud);
 
     glGenTextures(1, &m_gradientTexture);
 
@@ -71,34 +71,34 @@ void PrismaRendering::onInitialize()
     glBindTexture(GL_TEXTURE_1D, 0);
 }
 
-void PrismaRendering::onCreateGeometry()
+void PolygonRendering::onCreateGeometry()
 {
-    const auto prismaGridSize = m_gridSize;
-    const auto prismaCount = prismaGridSize * prismaGridSize * prismaGridSize;
-    const auto worldScale = glm::vec3(1.0f) / glm::vec3(prismaGridSize, prismaGridSize, prismaGridSize);
+    const auto polygonGridSize = m_gridSize;
+    const auto polygonCount = polygonGridSize * polygonGridSize * polygonGridSize;
+    const auto worldScale = glm::vec3(1.0f) / glm::vec3(polygonGridSize, polygonGridSize, polygonGridSize);
 
     for (auto implementation : m_implementations)
     {
-        implementation->resize(prismaCount);
+        implementation->resize(polygonCount);
     }
 
     std::array<std::vector<float>, 4> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(prismaGridSize)+"-"+std::to_string(i)+".raw");
+        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(polygonGridSize)+"-"+std::to_string(i)+".raw");
     }
 
 //#pragma omp parallel for
-    for (size_t i = 0; i < prismaCount; ++i)
+    for (size_t i = 0; i < polygonCount; ++i)
     {
-        const auto position = glm::ivec3(i % prismaGridSize, (i / prismaGridSize) % prismaGridSize, i / prismaGridSize / prismaGridSize);
+        const auto position = glm::ivec3(i % polygonGridSize, (i / polygonGridSize) % polygonGridSize, i / polygonGridSize / polygonGridSize);
         const auto offset = glm::vec3(
             (position.y + position.z) % 2 ? gridOffset : 0.0f,
             (position.x + position.z) % 2 ? gridOffset : 0.0f,
             (position.x + position.y) % 2 ? gridOffset : 0.0f
         );
 
-        Prisma p;
+        Polygon p;
 
         p.heightRange.x = -0.5f + (position.y + offset.y) * worldScale.y - 0.5f * noise[0][i] * worldScale.y;
         p.heightRange.y = -0.5f + (position.y + offset.y) * worldScale.y + 0.5f * noise[0][i] * worldScale.y;
@@ -124,12 +124,12 @@ void PrismaRendering::onCreateGeometry()
 
         for (auto implementation : m_implementations)
         {
-            static_cast<PrismaImplementation*>(implementation)->setPrisma(i, p);
+            static_cast<PolygonImplementation*>(implementation)->setPolygon(i, p);
         }
     }
 }
 
-void PrismaRendering::onPrepareRendering()
+void PolygonRendering::onPrepareRendering()
 {
     GLuint program = m_current->program();
     const auto gradientSamplerLocation = glGetUniformLocation(program, "gradient");
@@ -140,7 +140,7 @@ void PrismaRendering::onPrepareRendering()
     glBindTexture(GL_TEXTURE_1D, m_gradientTexture);
 }
 
-void PrismaRendering::onFinalizeRendering()
+void PolygonRendering::onFinalizeRendering()
 {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, 0);

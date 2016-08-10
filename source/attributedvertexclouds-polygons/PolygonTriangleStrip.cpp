@@ -1,5 +1,5 @@
 
-#include "PrismaTriangleStrip.h"
+#include "PolygonTriangleStrip.h"
 
 #include <glbinding/gl/gl.h>
 
@@ -7,8 +7,8 @@
 
 using namespace gl;
 
-PrismaTriangleStrip::PrismaTriangleStrip()
-: PrismaImplementation("Triangle Strip")
+PolygonTriangleStrip::PolygonTriangleStrip()
+: PolygonImplementation("Triangle Strip")
 , m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
@@ -16,7 +16,7 @@ PrismaTriangleStrip::PrismaTriangleStrip()
 {
 }
 
-PrismaTriangleStrip::~PrismaTriangleStrip()
+PolygonTriangleStrip::~PolygonTriangleStrip()
 {
     glDeleteBuffers(1, &m_vertices);
     glDeleteVertexArrays(1, &m_vao);
@@ -26,7 +26,7 @@ PrismaTriangleStrip::~PrismaTriangleStrip()
     glDeleteProgram(m_program);
 }
 
-void PrismaTriangleStrip::onInitialize()
+void PolygonTriangleStrip::onInitialize()
 {
     glGenBuffers(1, &m_vertices);
 
@@ -45,7 +45,7 @@ void PrismaTriangleStrip::onInitialize()
     loadShader();
 }
 
-void PrismaTriangleStrip::initializeVAO()
+void PolygonTriangleStrip::initializeVAO()
 {
     glBindVertexArray(m_vao);
 
@@ -68,7 +68,7 @@ void PrismaTriangleStrip::initializeVAO()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-bool PrismaTriangleStrip::loadShader()
+bool PolygonTriangleStrip::loadShader()
 {
     const auto vertexShaderSource = textFromFile("data/shaders/visualization-triangles/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
@@ -109,137 +109,137 @@ bool PrismaTriangleStrip::loadShader()
     return true;
 }
 
-void PrismaTriangleStrip::setPrisma(size_t index, const Prisma & prisma)
+void PolygonTriangleStrip::setPolygon(size_t index, const Polygon & polygon)
 {
-    if (prisma.points.size() < 3)
+    if (polygon.points.size() < 3)
     {
         return;
     }
 
-    const auto vertexCount = 2 + 4 * prisma.points.size();
+    const auto vertexCount = 2 + 4 * polygon.points.size();
 
     m_mutex.lock();
 
     const auto firstIndex = m_position.size();
-    const auto topFaceStartIndex = firstIndex + 2 + 2 * prisma.points.size();
-    const auto bottomFaceStartIndex = topFaceStartIndex + prisma.points.size();
+    const auto topFaceStartIndex = firstIndex + 2 + 2 * polygon.points.size();
+    const auto bottomFaceStartIndex = topFaceStartIndex + polygon.points.size();
 
     m_multiStarts.at(3 * index + 0) = firstIndex;
     m_multiStarts.at(3 * index + 1) = topFaceStartIndex;
     m_multiStarts.at(3 * index + 2) = bottomFaceStartIndex;
 
-    m_multiCounts.at(3 * index + 0) = 2 + 2 * prisma.points.size();
-    m_multiCounts.at(3 * index + 1) = prisma.points.size();
-    m_multiCounts.at(3 * index + 2) = prisma.points.size();
+    m_multiCounts.at(3 * index + 0) = 2 + 2 * polygon.points.size();
+    m_multiCounts.at(3 * index + 1) = polygon.points.size();
+    m_multiCounts.at(3 * index + 2) = polygon.points.size();
 
     m_position.resize(m_position.size() + vertexCount);
     m_normal.resize(m_normal.size() + vertexCount);
     m_colorValue.resize(m_colorValue.size() + vertexCount);
 
     // Side faces
-    for (auto i = size_t(0); i <= prisma.points.size(); ++i)
+    for (auto i = size_t(0); i <= polygon.points.size(); ++i)
     {
-        const auto & current = prisma.points[i % prisma.points.size()];
-        const auto & previous = prisma.points[(i + prisma.points.size() - 1) % prisma.points.size()];
+        const auto & current = polygon.points[i % polygon.points.size()];
+        const auto & previous = polygon.points[(i + polygon.points.size() - 1) % polygon.points.size()];
 
         const auto normal = glm::cross(glm::vec3(current.x - previous.x, 0.0f, current.y - previous.y), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        m_position[firstIndex + 2*i+0] = glm::vec3(current.x, prisma.heightRange.x, current.y);
-        m_position[firstIndex + 2*i+1] = glm::vec3(current.x, prisma.heightRange.y, current.y);
+        m_position[firstIndex + 2*i+0] = glm::vec3(current.x, polygon.heightRange.x, current.y);
+        m_position[firstIndex + 2*i+1] = glm::vec3(current.x, polygon.heightRange.y, current.y);
         m_normal[firstIndex + 2*i+0] = normal;
         m_normal[firstIndex + 2*i+1] = normal;
-        m_colorValue[firstIndex + 2*i+0] = prisma.colorValue;
-        m_colorValue[firstIndex + 2*i+1] = prisma.colorValue;
+        m_colorValue[firstIndex + 2*i+0] = polygon.colorValue;
+        m_colorValue[firstIndex + 2*i+1] = polygon.colorValue;
     }
 
     // Top face
-    for (auto i = size_t(0); i < prisma.points.size(); ++i)
+    for (auto i = size_t(0); i < polygon.points.size(); ++i)
     {
         if (i > 0)
         {
             auto j = i / 2;
             if (i % 2)
             {
-                m_position[topFaceStartIndex + i] = glm::vec3(prisma.points[prisma.points.size() - j - 1].x, prisma.heightRange.y, prisma.points[prisma.points.size() - j - 1].y);
+                m_position[topFaceStartIndex + i] = glm::vec3(polygon.points[polygon.points.size() - j - 1].x, polygon.heightRange.y, polygon.points[polygon.points.size() - j - 1].y);
             }
             else
             {
-                m_position[topFaceStartIndex + i] = glm::vec3(prisma.points[j].x, prisma.heightRange.y, prisma.points[j].y);
+                m_position[topFaceStartIndex + i] = glm::vec3(polygon.points[j].x, polygon.heightRange.y, polygon.points[j].y);
             }
         }
         else
         {
-            m_position[topFaceStartIndex + i] = glm::vec3(prisma.points[i].x, prisma.heightRange.y, prisma.points[i].y);
+            m_position[topFaceStartIndex + i] = glm::vec3(polygon.points[i].x, polygon.heightRange.y, polygon.points[i].y);
         }
 
         m_normal[topFaceStartIndex + i] = glm::vec3(0.0f, 1.0f, 0.0f);
-        m_colorValue[topFaceStartIndex + i] = prisma.colorValue;
+        m_colorValue[topFaceStartIndex + i] = polygon.colorValue;
     }
 
     // Bottom face
-    for (auto i = size_t(0); i < prisma.points.size(); ++i)
+    for (auto i = size_t(0); i < polygon.points.size(); ++i)
     {
         if (i > 0)
         {
             auto j = i / 2;
             if (i % 2)
             {
-                m_position[bottomFaceStartIndex + i] = glm::vec3(prisma.points[j].x, prisma.heightRange.x, prisma.points[j].y);
+                m_position[bottomFaceStartIndex + i] = glm::vec3(polygon.points[j].x, polygon.heightRange.x, polygon.points[j].y);
             }
             else
             {
-                m_position[bottomFaceStartIndex + i] = glm::vec3(prisma.points[prisma.points.size() - j - 1].x, prisma.heightRange.x, prisma.points[prisma.points.size() - j - 1].y);
+                m_position[bottomFaceStartIndex + i] = glm::vec3(polygon.points[polygon.points.size() - j - 1].x, polygon.heightRange.x, polygon.points[polygon.points.size() - j - 1].y);
             }
         }
         else
         {
-            m_position[bottomFaceStartIndex + i] = glm::vec3(prisma.points[i].x, prisma.heightRange.x, prisma.points[i].y);
+            m_position[bottomFaceStartIndex + i] = glm::vec3(polygon.points[i].x, polygon.heightRange.x, polygon.points[i].y);
         }
 
         m_normal[bottomFaceStartIndex + i] = glm::vec3(0.0f, -1.0f, 0.0f);
-        m_colorValue[bottomFaceStartIndex + i] = prisma.colorValue;
+        m_colorValue[bottomFaceStartIndex + i] = polygon.colorValue;
     }
 
     m_mutex.unlock();
 }
 
-size_t PrismaTriangleStrip::size() const
+size_t PolygonTriangleStrip::size() const
 {
     return m_position.size();
 }
 
-size_t PrismaTriangleStrip::verticesCount() const
+size_t PolygonTriangleStrip::verticesCount() const
 {
     return size();
 }
 
-size_t PrismaTriangleStrip::staticByteSize() const
+size_t PolygonTriangleStrip::staticByteSize() const
 {
     return 0;
 }
 
-size_t PrismaTriangleStrip::byteSize() const
+size_t PolygonTriangleStrip::byteSize() const
 {
     return size() * vertexByteSize();
 }
 
-size_t PrismaTriangleStrip::vertexByteSize() const
+size_t PolygonTriangleStrip::vertexByteSize() const
 {
     return sizeof(float) * componentCount();
 }
 
-size_t PrismaTriangleStrip::componentCount() const
+size_t PolygonTriangleStrip::componentCount() const
 {
     return 7;
 }
 
-void PrismaTriangleStrip::resize(size_t count)
+void PolygonTriangleStrip::resize(size_t count)
 {
     m_multiStarts.resize(3 * count);
     m_multiCounts.resize(3 * count);
 }
 
-void PrismaTriangleStrip::onRender()
+void PolygonTriangleStrip::onRender()
 {
     glBindVertexArray(m_vao);
 
@@ -260,7 +260,7 @@ void PrismaTriangleStrip::onRender()
     glBindVertexArray(0);
 }
 
-gl::GLuint PrismaTriangleStrip::program() const
+gl::GLuint PolygonTriangleStrip::program() const
 {
     return m_program;
 }
