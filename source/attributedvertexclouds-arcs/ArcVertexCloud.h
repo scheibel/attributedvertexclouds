@@ -14,7 +14,7 @@
 class ArcVertexCloud : public ArcImplementation
 {
 public:
-    ArcVertexCloud();
+    ArcVertexCloud(bool useAlternativeShaders);
     ~ArcVertexCloud();
 
     virtual void onInitialize() override;
@@ -35,6 +35,8 @@ public:
 
     virtual gl::GLuint program() const override;
 public:
+    bool m_alternativeShaders;
+
     std::vector<glm::vec2> m_center;
     std::vector<glm::vec2> m_heightRange;
     std::vector<glm::vec2> m_angleRange;

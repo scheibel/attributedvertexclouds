@@ -147,10 +147,8 @@ int main(int argc, char ** argv)
     }
 
     std::cout << "Choose Techniques" << std::endl;
-    std::cout << " [1] Triangles" << std::endl;
-    std::cout << " [2] Triangle Strip" << std::endl;
-    std::cout << " [3] Instancing" << std::endl;
-    std::cout << " [4] Attributed Vertex Cloud" << std::endl;
+    std::cout << " [1] Attributed Vertex Cloud (gs instancing)" << std::endl;
+    std::cout << " [2] Attributed Vertex Cloud (tes instancing)" << std::endl;
     std::cout << std::endl;
     std::cout << "Camera Preset" << std::endl;
     std::cout << " [F1] Moving" << std::endl;

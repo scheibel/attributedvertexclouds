@@ -50,7 +50,8 @@ ArcRendering::~ArcRendering()
 
 void ArcRendering::onInitialize()
 {
-    addImplementation(new ArcVertexCloud);
+    addImplementation(new ArcVertexCloud(false));
+    addImplementation(new ArcVertexCloud(true));
 
     glGenTextures(1, &m_gradientTexture);
 

@@ -7,8 +7,9 @@
 
 using namespace gl;
 
-ArcVertexCloud::ArcVertexCloud()
+ArcVertexCloud::ArcVertexCloud(bool useAlternativeShaders)
 : ArcImplementation("Attributed Vertex Cloud")
+, m_alternativeShaders(useAlternativeShaders)
 , m_vertices(0)
 , m_vao(0)
 , m_vertexShader(0)
@@ -99,7 +100,7 @@ bool ArcVertexCloud::loadShader()
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
 
 
-    const auto tessControlShaderSource = textFromFile("data/shaders/arcs-avc/standard.tcs");
+    const auto tessControlShaderSource = textFromFile(m_alternativeShaders ? "data/shaders/arcs-avc/alternative.tcs" : "data/shaders/arcs-avc/standard.tcs");
     const auto tessControlShaderSource_ptr = tessControlShaderSource.c_str();
     if(tessControlShaderSource_ptr)
         glShaderSource(m_tessControlShader, 1, &tessControlShaderSource_ptr, 0);
@@ -109,7 +110,7 @@ bool ArcVertexCloud::loadShader()
     success &= checkForCompilationError(m_tessControlShader, "tessellation control shader");
 
 
-    const auto tessEvaluationShaderSource = textFromFile("data/shaders/arcs-avc/standard.tes");
+    const auto tessEvaluationShaderSource = textFromFile(m_alternativeShaders ? "data/shaders/arcs-avc/alternative.tes" : "data/shaders/arcs-avc/standard.tes");
     const auto tessEvaluationShaderSource_ptr = tessEvaluationShaderSource.c_str();
     if(tessEvaluationShaderSource_ptr)
         glShaderSource(m_tessEvaluationShader, 1, &tessEvaluationShaderSource_ptr, 0);
@@ -119,7 +120,7 @@ bool ArcVertexCloud::loadShader()
     success &= checkForCompilationError(m_tessEvaluationShader, "tessellation evaluation shader");
 
 
-    const auto geometryShaderSource = textFromFile("data/shaders/arcs-avc/standard.geom");
+    const auto geometryShaderSource = textFromFile(m_alternativeShaders ? "data/shaders/arcs-avc/alternative.geom" : "data/shaders/arcs-avc/standard.geom");
     const auto geometryShaderSource_ptr = geometryShaderSource.c_str();
     if(geometryShaderSource_ptr)
         glShaderSource(m_geometryShader, 1, &geometryShaderSource_ptr, 0);
