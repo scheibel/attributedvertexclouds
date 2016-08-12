@@ -33,6 +33,6 @@ void main()
     vertex.heightRange = attributes.heightRange;
     vertex.color = attributes.color;
     
-    float threshold = 1.0/(gl_TessLevelOuter[0]*gl_TessLevelOuter[1]);
+    float threshold = 0.5/(gl_TessLevelOuter[0]*gl_TessLevelOuter[1]);
     vertex.hasSide = pos<threshold || pos>1.0-threshold;
 }

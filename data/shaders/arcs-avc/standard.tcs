@@ -28,7 +28,7 @@ void main()
     
     if (gl_InvocationID == 0)
     {
-        float sqrtTesslevel = clamp(ceil(sqrt(segment[0].tessellationCount)), 1.0, 64.0);
+        float sqrtTesslevel = clamp(ceil(sqrt(segment[0].tessellationCount)), 2.0, 64.0);
         
         gl_TessLevelOuter[0] = sqrtTesslevel;
         gl_TessLevelOuter[1] = sqrtTesslevel;

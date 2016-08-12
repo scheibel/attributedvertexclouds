@@ -1,16 +1,8 @@
 #version 400
 
-#define A 0
-#define B 1
-#define C 2
-#define D 3
-#define E 4
-#define F 5
-#define G 6
-#define H 7
-
 layout (lines) in;
-layout (triangle_strip, max_vertices = 18) out;
+layout (triangle_strip, max_vertices = 12) out;
+// Assumption: either vertex[0].hasSide or vertex[1].hasSide has side, never both
 
 uniform mat4 viewProjection;
 
@@ -27,125 +19,79 @@ in Vertex
 flat out vec3 g_color;
 flat out vec3 g_normal;
 
-vec3 segment[8];
-
-void emit(in vec3 pos, in vec3 n)
+void emit(in vec3 pos, in vec3 normal)
 {
     gl_Position = viewProjection * vec4(pos, 1.0);
     g_color = vertex[0].color;
-    g_normal = n;
+    g_normal = normal;
     
     EmitVertex();
 }
 
-vec3 circlePoint(in float angle, in float radius, in float height, in vec2 center)
+vec3 circlePoint(in float angle, in float radius, in float height)
 {
-    float x = sin(angle) * radius + center.x;
-    float y = cos(angle) * radius + center.y;
-    
-    return vec3(x, height, y);
-}
-
-void emitPrimitive10(in int indices[10])
-{
-    vec3 prevPrev = segment[indices[0]];
-    vec3 prev = segment[indices[1]];
-    
-    emit(prevPrev, vec3(0.0));
-    emit(prev, vec3(0.0));
-    
-    for (int i=2; i<10; ++i)
-    {
-        vec3 current = segment[indices[i]];
-        vec3 n = cross(prev-prevPrev, current-prev) * (i%2==0?1.0:-1.0);
-        emit(current, n);
-        
-        prevPrev = prev;
-        prev = current;
-    }
-    
-    EndPrimitive();
-}
-
-void emitPrimitive6(in int indices[6])
-{
-    vec3 prevPrev = segment[indices[0]];
-    vec3 prev = segment[indices[1]];
-    
-    emit(prevPrev, vec3(0.0));
-    emit(prev, vec3(0.0));
-    
-    for (int i=2; i<6; ++i)
-    {
-        vec3 current = segment[indices[i]];
-        vec3 n = cross(prev-prevPrev, current-prev) * (i%2==0?1.0:-1.0);
-        emit(current, n);
-        
-        prevPrev = prev;
-        prev = current;
-    }
-    
-    EndPrimitive();
-}
-
-void emitPrimitive4(in int indices[4])
-{
-    vec3 prevPrev = segment[indices[0]];
-    vec3 prev = segment[indices[1]];
-    
-    emit(prevPrev, vec3(0.0));
-    emit(prev, vec3(0.0));
-    
-    for (int i=2; i<4; ++i)
-    {
-        vec3 current = segment[indices[i]];
-        vec3 n = cross(prev-prevPrev, current-prev) * (i%2==0?1.0:-1.0);
-        emit(current, n);
-        
-        prevPrev = prev;
-        prev = current;
-    }
-    
-    EndPrimitive();
+    return vec3(sin(angle), height, cos(angle))
+        * vec3(radius, 1.0, radius)
+        + vec3(vertex[0].center.x, 0.0, vertex[0].center.y);
 }
 
 void main()
 {
-    float startAngle = vertex[0].angle;
-    float endAngle = vertex[1].angle;
-    float innerRadius = vertex[0].radiusRange[0];
-    float outerRadius = vertex[0].radiusRange[1];
-    float startBottom = vertex[0].heightRange[0];
-    float endBottom = vertex[1].heightRange[0];
-    float startTop = vertex[0].heightRange[1];
-    float endTop = vertex[1].heightRange[1];
-    vec2 center = vertex[0].center;
+    vec3 A = circlePoint(vertex[0].angle, vertex[0].radiusRange.x, vertex[0].heightRange.x);
+    vec3 B = circlePoint(vertex[1].angle, vertex[0].radiusRange.x, vertex[0].heightRange.x);
+    vec3 C = circlePoint(vertex[1].angle, vertex[0].radiusRange.y, vertex[0].heightRange.x);
+    vec3 D = circlePoint(vertex[0].angle, vertex[0].radiusRange.y, vertex[0].heightRange.x);
+    vec3 E = circlePoint(vertex[0].angle, vertex[0].radiusRange.x, vertex[0].heightRange.y);
+    vec3 F = circlePoint(vertex[1].angle, vertex[0].radiusRange.x, vertex[0].heightRange.y);
+    vec3 G = circlePoint(vertex[1].angle, vertex[0].radiusRange.y, vertex[0].heightRange.y);
+    vec3 H = circlePoint(vertex[0].angle, vertex[0].radiusRange.y, vertex[0].heightRange.y);
     
-    segment[A] = circlePoint(startAngle, innerRadius, startBottom, center);
-    segment[B] = circlePoint(endAngle, innerRadius, endBottom, center);
-    segment[C] = circlePoint(endAngle, outerRadius, endBottom, center);
-    segment[D] = circlePoint(startAngle, outerRadius, startBottom, center);
-    segment[E] = circlePoint(startAngle, innerRadius, startTop, center);
-    segment[F] = circlePoint(endAngle, innerRadius, endTop, center);
-    segment[G] = circlePoint(endAngle, outerRadius, endTop, center);
-    segment[H] = circlePoint(startAngle, outerRadius, startTop, center);
-        
-    if (startTop - startBottom > 0.0 || endTop - endBottom > 0.0)
+    vec3 top = vec3(0.0, 1.0, 0.0);
+    vec3 bottom = vec3(0.0, -1.0, 0.0);
+    bool hasHeight = vertex[0].heightRange.y - vertex[0].heightRange.x > 0.0;
+
+    vec3 left = normalize(cross(E-A, D-A));
+    vec3 right = normalize(cross(F-B, C-B));
+    vec3 front = normalize(cross(B-A, E-A));
+    //vec3 front = normalize(mix(A, B, 0.5) - vec3(vertex[0].center.x, vertex[0].heightRange.x, vertex[0].center.y));
+    vec3 back = -front;
+    
+    if (hasHeight)
     {
-        if (vertex[0].hasSide)
-        {
-            emitPrimitive4(int[4](A, D, E, H));
-        }
-        
-        emitPrimitive10(int[10](B, A, F, E, G, H, C, D, B, A));
-        
         if (vertex[1].hasSide)
         {
-            emitPrimitive4(int[4](C, B, G, F));
+            emit(B, right);
+            emit(F, right);
+            /*emit(C, right);
+            emit(G, right);
+            EndPrimitive();*/
+        }
+        
+        emit(C, right);
+    }
+    
+    emit(G, right);
+    emit(H, back);
+    emit(F, top);
+    emit(E, top);
+    emit(B, front); // B = G if no height
+    emit(A, front); // A = H if no height
+    
+    if (hasHeight)
+    {
+        emit(C, bottom);
+        emit(D, bottom);
+        emit(H, back);
+        
+        if (vertex[0].hasSide)
+        {
+            /*EndPrimitive();
+            emit(D, bottom);
+            emit(H, back);*/
+            emit(A, left);
+            emit(E, left);
         }
     }
-    else
-    {
-        emitPrimitive6(int[6](E, F, H, G, E, F));
-    }
+    
+    EndPrimitive();
 }
