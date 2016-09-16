@@ -41,23 +41,60 @@ const float pi2 = 2.0 * pi;
 
 void main()
 {
-    vertex.color = currentAttributes.color;
+    float y = gl_TessCoord.y;
+    float x = gl_TessCoord.x;
+    float secondHalf = step(0.5, x);
+    float xNormalized = mix(x * 2.0, x * 2.0 - 1.0, secondHalf);
+
+    int type = currentAttributes.type;
+    int neighborType = int(mix(previousAttributes.type, nextAttributes.type, secondHalf));
+    int otherNeighborType = int(mix(previousAttributes.type, nextAttributes.type, 1.0 - secondHalf));
+    int id = currentAttributes.trajectoryID;
+    int neighborID = int(mix(previousAttributes.trajectoryID, nextAttributes.trajectoryID, secondHalf));
+    int otherNeighborID = int(mix(previousAttributes.trajectoryID, nextAttributes.trajectoryID, 1.0 - secondHalf));
     
-    // for lines
-    vertex.color = mix(previousAttributes.color, vertex.color, smoothstep(0.0, colorMixingArea, gl_TessCoord.y));
-    vertex.color = mix(vertex.color, nextAttributes.color, smoothstep(1.0 - colorMixingArea, 1.0, gl_TessCoord.y));
+    vec3 tangent = normalize(mix(currentAttributes.position - previousAttributes.position, nextAttributes.position - currentAttributes.position, secondHalf));
     
-    int neighborType = int(mix(previousAttributes.type, nextAttributes.type, step(0.5, gl_TessCoord.y)));
-    int neighborID = int(mix(previousAttributes.trajectoryID, nextAttributes.trajectoryID, step(0.5, gl_TessCoord.y)));
+    if (neighborID != id)
+    {
+        if (otherNeighborID != id)
+        {
+            tangent = vec3(1.0, 0.0, 0.0);
+        }
+        else
+        {
+            tangent = normalize(mix(currentAttributes.position - previousAttributes.position, nextAttributes.position - currentAttributes.position, 1.0 - secondHalf));
+        }
+    }
     
-    //float ySize = mix(currentAttributes.sizeValue / 2.0, currentAttributes.sizeValue, float(neighborID == currentAttributes.trajectoryID));
+    //tangent = normalize(vec3(1.0, 1.0, 1.0));
+    vec3 normal = normalize(mix(vec3(0.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0), step(0.9, abs(dot(vec3(0.0, 1.0, 0.0), tangent)))));
+    vec3 bitangent = normalize(cross(normal, tangent));
+    normal = normalize(cross(bitangent, tangent));
     
     vec3 position = currentAttributes.position;
+    vec3 color = currentAttributes.color;
     
-    position.x += currentAttributes.sizeValue / 2.0 * cos(pi2 * gl_TessCoord.x) * sin(pi * gl_TessCoord.y);
-    position.y += currentAttributes.sizeValue / 2.0 * sin(pi2 * gl_TessCoord.x) * sin(pi * gl_TessCoord.y);
-    position.z += currentAttributes.sizeValue / 2.0 * cos(pi * gl_TessCoord.y);
+    if (neighborID == id && neighborType == 2 && type == 2) // tube
+    {
+        color = mix(mix(previousAttributes.color, currentAttributes.color, secondHalf), mix(currentAttributes.color, nextAttributes.color, secondHalf), smoothstep(0.0, 1.0, xNormalized));
+        
+        float radius = mix(mix(previousAttributes.sizeValue, currentAttributes.sizeValue, secondHalf), mix(currentAttributes.sizeValue, nextAttributes.sizeValue, secondHalf), smoothstep(0.0, 1.0, xNormalized));
+        radius = pow(radius, 1.4);
+        
+        position = mix(mix(previousAttributes.position, currentAttributes.position, secondHalf), mix(currentAttributes.position, nextAttributes.position, secondHalf), xNormalized);
+        position += radius * (cos(pi2 * y) * normal + sin(pi2 * y) * bitangent);
+    }
+    else
+    {
+        float radius = currentAttributes.sizeValue;
+        radius = pow(radius, 1.4);
+        
+        position += radius * tangent * mix(1.0, 1.0, secondHalf) * cos(pi * (1.0 - xNormalized));
+        position += radius * (cos(pi2 * y) * normal + sin(pi2 * y) * bitangent) * sin(pi * (1.0 - xNormalized));
+    }
     
+    vertex.color = color;
     gl_Position = vec4(position, 1.0);
 }
 

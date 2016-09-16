@@ -89,9 +89,12 @@ void TrajectoryRendering::onCreateGeometry()
         TrajectoryNode t;
 
         t.position = glm::vec3(-0.5f, -0.5f, -0.5f) + glm::vec3(position) * worldScale;
-        t.trajectoryID = position.z * trajectoryGridSize + position.x;
-        //t.type = noise[0][i] > 0.5f ? 2 : 1;
-        t.type = 1;
+        t.position += glm::vec3(
+            0.0f,
+            glm::sin(float(position.x) / trajectoryGridSize * 4.0f * glm::pi<float>()) * worldScale.y,
+            3.0f * glm::cos(float(position.y) / trajectoryGridSize * 6.0f * glm::pi<float>()) * worldScale.z);
+        t.trajectoryID = position.z * trajectoryGridSize + position.y;
+        t.type = noise[0][i] > 0.3f ? 2 : 1;
         t.sizeValue = glm::mix(0.3f, 0.8f, noise[1][i]) * worldScale.x;
         t.colorValue = noise[2][i];
 
