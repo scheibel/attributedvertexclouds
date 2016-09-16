@@ -75,7 +75,7 @@ void main()
     vec3 position = currentAttributes.position;
     vec3 color = currentAttributes.color;
     
-    if (neighborID == id && neighborType == 2 && type == 2) // tube
+    if (neighborID == id && (neighborType == 2 && type == 2)) // tube
     {
         color = mix(mix(previousAttributes.color, currentAttributes.color, secondHalf), mix(currentAttributes.color, nextAttributes.color, secondHalf), smoothstep(0.0, 1.0, xNormalized));
         

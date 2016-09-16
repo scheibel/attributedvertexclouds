@@ -56,7 +56,7 @@ patch out NextAttributes
     float sizeValue;
 } nextAttributes;
 
-uniform int tessellationLevel = 32;
+uniform int tessellationLevel = 16;
 
 void main()
 {

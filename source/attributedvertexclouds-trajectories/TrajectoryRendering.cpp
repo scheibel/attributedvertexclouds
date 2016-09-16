@@ -95,7 +95,7 @@ void TrajectoryRendering::onCreateGeometry()
             3.0f * glm::cos(float(position.y) / trajectoryGridSize * 6.0f * glm::pi<float>()) * worldScale.z);
         t.trajectoryID = position.z * trajectoryGridSize + position.y;
         t.type = noise[0][i] > 0.3f ? 2 : 1;
-        t.sizeValue = glm::mix(0.3f, 0.8f, noise[1][i]) * worldScale.x;
+        t.sizeValue = glm::mix(0.2f, 0.9f, noise[1][i]) * worldScale.x;
         t.colorValue = noise[2][i];
 
         for (auto implementation : m_implementations)
