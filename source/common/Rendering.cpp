@@ -25,13 +25,13 @@ static const auto warmupCount = size_t(1000);
 static const auto measureCount = size_t(1000);
 static const auto fpsSampleCount = size_t(100);
 
-static const auto screenshotWidth = size_t(3840);
-static const auto screenshotHeight = size_t(2160);
+static const auto screenshotWidth = size_t(3840 * 2);
+static const auto screenshotHeight = size_t(2160 * 2);
 
 //static const float clearColor[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 //static const float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 //static const float clearColor[] = { 0.12f, 0.14f, 0.18f, 1.0f };
-static const float clearColor[] = { 0.94f, 0.94f, 0.94f, 1.0f };
+static const float clearColor[] = { 0.81f, 0.81f, 0.81f, 1.0f };
 
 
 } // namespace

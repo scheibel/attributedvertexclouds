@@ -27,10 +27,10 @@ namespace
 
 static const auto gridOffset = 0.2f;
 
-static const auto lightGray = glm::vec3(234) / 275.0f;
-static const auto red = glm::vec3(196, 30, 20) / 275.0f;
-static const auto orange = glm::vec3(255, 114, 70) / 275.0f;
-static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
+static const auto lightGray = glm::vec3(200) / 255.0f;
+static const auto red = glm::vec3(196, 30, 20) / 255.0f;
+static const auto orange = glm::vec3(255, 114, 70) / 255.0f;
+static const auto yellow = glm::vec3(255, 200, 107) / 255.0f;
 
 
 } // namespace

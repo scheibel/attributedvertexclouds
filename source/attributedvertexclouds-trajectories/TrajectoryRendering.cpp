@@ -22,10 +22,10 @@ namespace
 {
 
 
-static const auto lightGray = glm::vec3(234) / 275.0f;
-static const auto red = glm::vec3(196, 30, 20) / 275.0f;
-static const auto orange = glm::vec3(255, 114, 70) / 275.0f;
-static const auto yellow = glm::vec3(255, 200, 107) / 275.0f;
+static const auto lightGray = glm::vec3(200) / 255.0f;
+static const auto red = glm::vec3(196, 30, 20) / 255.0f;
+static const auto orange = glm::vec3(255, 114, 70) / 255.0f;
+static const auto yellow = glm::vec3(255, 200, 107) / 255.0f;
 
 
 } // namespace
@@ -67,7 +67,7 @@ void TrajectoryRendering::onInitialize()
 void TrajectoryRendering::onCreateGeometry()
 {
     const auto trajectoryGridSize = m_gridSize;
-    const auto trajectoryCount = trajectoryGridSize * trajectoryGridSize * trajectoryGridSize;
+    const auto trajectoryCount = trajectoryGridSize * trajectoryGridSize;
     const auto worldScale = glm::vec3(1.0f) / glm::vec3(trajectoryGridSize, trajectoryGridSize, trajectoryGridSize);
 
     for (auto implementation : m_implementations)
@@ -84,18 +84,23 @@ void TrajectoryRendering::onCreateGeometry()
 #pragma omp parallel for
     for (size_t i = 0; i < trajectoryCount; ++i)
     {
-        const auto position = glm::ivec3(i % trajectoryGridSize, (i / trajectoryGridSize) % trajectoryGridSize, i / trajectoryGridSize / trajectoryGridSize);
+        const auto position = glm::ivec3((i / trajectoryGridSize) % trajectoryGridSize, i % trajectoryGridSize, 1);
 
         TrajectoryNode t;
 
-        t.position = glm::vec3(-0.5f, -0.5f, -0.5f) + glm::vec3(position) * worldScale;
+        const auto angle = (position.x + position.y * 0.5f) / static_cast<float>(trajectoryGridSize);
+        const auto radius = 0.5f + 0.3f * glm::cos(position.x / static_cast<float>(trajectoryGridSize) * 1.0f * glm::pi<float>())
+             + 0.1f * glm::sin(position.y / static_cast<float>(trajectoryGridSize) * 1.0f * glm::pi<float>());
+
+        t.position = glm::vec3(0.0f, -0.5f, 0.0f);
         t.position += glm::vec3(
-            0.0f,
-            glm::sin(float(position.x) / trajectoryGridSize * 4.0f * glm::pi<float>()) * worldScale.y,
-            3.0f * glm::cos(float(position.y) / trajectoryGridSize * 6.0f * glm::pi<float>()) * worldScale.z);
-        t.trajectoryID = position.z * trajectoryGridSize + position.y;
-        t.type = noise[0][i] > 0.3f ? 2 : 1;
-        t.sizeValue = glm::mix(0.2f, 0.9f, noise[1][i]) * worldScale.x;
+            radius * glm::cos(2.0f * glm::pi<float>() * angle),
+            position.y * worldScale.y,
+            radius * glm::sin(2.0f * glm::pi<float>() * angle)
+        );
+        t.trajectoryID = position.x;
+        t.type = noise[0][i] > 0.0f ? 2 : 1;
+        t.sizeValue = glm::mix(0.3f, 0.9f, noise[1][i]) * worldScale.x;
         t.colorValue = noise[2][i];
 
         for (auto implementation : m_implementations)

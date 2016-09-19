@@ -77,7 +77,7 @@ void main()
     
     if (neighborID == id && (neighborType == 2 && type == 2)) // tube
     {
-        color = mix(mix(previousAttributes.color, currentAttributes.color, secondHalf), mix(currentAttributes.color, nextAttributes.color, secondHalf), smoothstep(0.0, 1.0, xNormalized));
+        color = mix(mix(previousAttributes.color, currentAttributes.color, secondHalf), mix(currentAttributes.color, nextAttributes.color, secondHalf), smoothstep(0.5 - colorMixingArea * 0.5, 0.5 + colorMixingArea * 0.5, xNormalized));
         
         float radius = mix(mix(previousAttributes.sizeValue, currentAttributes.sizeValue, secondHalf), mix(currentAttributes.sizeValue, nextAttributes.sizeValue, secondHalf), smoothstep(0.0, 1.0, xNormalized));
         radius = pow(radius, 1.4);
