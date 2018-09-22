@@ -5,6 +5,7 @@
 
 find_package(glm REQUIRED)
 find_package(glbinding REQUIRED)
+find_package(cpplocate REQUIRED)
 
 # 
 # Library name and options
@@ -111,6 +112,7 @@ target_link_libraries(${target}
     PUBLIC
     ${DEFAULT_LIBRARIES}
     glbinding::glbinding
+    cpplocate::cpplocate
     glm
 
     INTERFACE

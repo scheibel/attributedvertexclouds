@@ -1,4 +1,7 @@
 
+#pragma once
+
+
 #include <vector>
 #include <string>
 
@@ -15,13 +18,19 @@
 
 #include <glbinding/gl/types.h>
 
+
+const std::string & dataPath();
+
 // Read raw binary file into a char vector (probably the fastest way).
-std::vector<char> rawFromFile(const char * filePath);
+std::vector<char> rawFromFile(const std::string & filePath);
 std::vector<float> rawFromFileF(const std::string & filePath);
 
-bool rawToFile(const char * filePath, const std::vector<char> & raw);
+bool rawToFile(const std::string & filePath, const std::vector<char> & raw);
 
-std::string textFromFile(const char * filePath);
+std::string textFromFile(const std::string & filePath);
+
+std::string loadShaderSource(const std::string & shaderPath);
+std::vector<float> loadNoise(const std::string & noisePath);
 
 bool createShader(gl::GLenum type, const std::string & name, const std::string & source, gl::GLuint & id);
 bool createProgram(const std::string & name, gl::GLuint vertexShader, gl::GLuint fragmentShader, gl::GLuint & id);

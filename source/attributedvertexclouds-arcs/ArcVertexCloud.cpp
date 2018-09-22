@@ -90,7 +90,7 @@ void ArcVertexCloud::initializeVAO()
 
 bool ArcVertexCloud::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/arcs-avc/standard.vert");
+    const auto vertexShaderSource = loadShaderSource("/arcs-avc/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
@@ -100,7 +100,7 @@ bool ArcVertexCloud::loadShader()
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
 
 
-    const auto tessControlShaderSource = textFromFile(m_alternativeShaders ? "data/shaders/arcs-avc/alternative.tcs" : "data/shaders/arcs-avc/standard.tcs");
+    const auto tessControlShaderSource = loadShaderSource(m_alternativeShaders ? "/arcs-avc/alternative.tcs" : "/arcs-avc/standard.tcs");
     const auto tessControlShaderSource_ptr = tessControlShaderSource.c_str();
     if(tessControlShaderSource_ptr)
         glShaderSource(m_tessControlShader, 1, &tessControlShaderSource_ptr, 0);
@@ -110,7 +110,7 @@ bool ArcVertexCloud::loadShader()
     success &= checkForCompilationError(m_tessControlShader, "tessellation control shader");
 
 
-    const auto tessEvaluationShaderSource = textFromFile(m_alternativeShaders ? "data/shaders/arcs-avc/alternative.tes" : "data/shaders/arcs-avc/standard.tes");
+    const auto tessEvaluationShaderSource = loadShaderSource(m_alternativeShaders ? "/arcs-avc/alternative.tes" : "/arcs-avc/standard.tes");
     const auto tessEvaluationShaderSource_ptr = tessEvaluationShaderSource.c_str();
     if(tessEvaluationShaderSource_ptr)
         glShaderSource(m_tessEvaluationShader, 1, &tessEvaluationShaderSource_ptr, 0);
@@ -120,7 +120,7 @@ bool ArcVertexCloud::loadShader()
     success &= checkForCompilationError(m_tessEvaluationShader, "tessellation evaluation shader");
 
 
-    const auto geometryShaderSource = textFromFile(m_alternativeShaders ? "data/shaders/arcs-avc/alternative.geom" : "data/shaders/arcs-avc/standard.geom");
+    const auto geometryShaderSource = loadShaderSource(m_alternativeShaders ? "/arcs-avc/alternative.geom" : "/arcs-avc/standard.geom");
     const auto geometryShaderSource_ptr = geometryShaderSource.c_str();
     if(geometryShaderSource_ptr)
         glShaderSource(m_geometryShader, 1, &geometryShaderSource_ptr, 0);
@@ -130,7 +130,7 @@ bool ArcVertexCloud::loadShader()
     success &= checkForCompilationError(m_geometryShader, "geometry shader");
 
 
-    const auto fragmentShaderSource = textFromFile("data/shaders/visualization.frag");
+    const auto fragmentShaderSource = loadShaderSource("/visualization.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
     if(fragmentShaderSource_ptr)
         glShaderSource(m_fragmentShader, 1, &fragmentShaderSource_ptr, 0);

@@ -110,7 +110,7 @@ void Postprocessing::onInitialize()
 
 bool Postprocessing::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/postprocessing/standard.vert");
+    const auto vertexShaderSource = loadShaderSource("/postprocessing/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_postProcessingVertexShader, 1, &vertexShaderSource_ptr, 0);
@@ -119,7 +119,7 @@ bool Postprocessing::loadShader()
 
     bool success = checkForCompilationError(m_postProcessingVertexShader, "postprocessing vertex shader");
 
-    const auto fragmentShaderSource = textFromFile("data/shaders/postprocessing/standard.frag");
+    const auto fragmentShaderSource = loadShaderSource("/postprocessing/standard.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
     if(fragmentShaderSource_ptr)
         glShaderSource(m_postProcessingFragmentShader, 1, &fragmentShaderSource_ptr, 0);

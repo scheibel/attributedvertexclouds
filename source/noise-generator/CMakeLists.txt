@@ -4,6 +4,7 @@
 # 
 
 find_package(glm REQUIRED)
+find_package(cpplocate REQUIRED)
 find_package(glkernel)
 
 find_package(OpenMP QUIET)
@@ -86,6 +87,7 @@ target_link_libraries(${target}
     ${DEFAULT_LIBRARIES}
     
     glm
+    cpplocate::cpplocate
     glkernel::glkernel
 )
 

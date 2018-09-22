@@ -18,13 +18,40 @@
 #include <glm/geometric.hpp>
 #pragma warning(pop)
 
+#include <cpplocate/cpplocate.h>
+
 #include <glbinding/gl32core/gl.h>  // this is a OpenGL feature include; it declares all OpenGL 3.2 Core symbols
 
 using namespace gl;
 
 // Read raw binary file into a char vector (probably the fastest way).
 
-std::vector<char> rawFromFile(const char * filePath)
+
+namespace
+{
+
+
+std::string determineDataPath()
+{
+    std::string path = cpplocate::locatePath("data/shaders", "share/attributedvertexclouds/shaders", reinterpret_cast<void *>(&dataPath));
+    if (path.empty()) path = "./data";
+    else              path = path + "data";
+
+    return path;
+}
+
+
+} // namespace
+
+
+const std::string & dataPath()
+{
+    static const auto path = determineDataPath();
+
+    return path;
+}
+
+std::vector<char> rawFromFile(const std::string & filePath)
 {
     auto stream = std::ifstream(filePath, std::ios::in | std::ios::binary | std::ios::ate);
 
@@ -45,7 +72,7 @@ std::vector<char> rawFromFile(const char * filePath)
     return raw;
 }
 
-std::vector<float> rawFromFileF(const std::string &filePath)
+std::vector<float> rawFromFileF(const std::string & filePath)
 {
     auto stream = std::ifstream(filePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
@@ -66,10 +93,20 @@ std::vector<float> rawFromFileF(const std::string &filePath)
     return raw;
 }
 
-std::string textFromFile(const char * filePath)
+std::string textFromFile(const std::string & filePath)
 {
     const auto text = rawFromFile(filePath);
     return std::string(text.begin(), text.end());
+}
+
+std::string loadShaderSource(const std::string & shaderPath)
+{
+    return textFromFile(dataPath() + "/shaders" + shaderPath);
+}
+
+std::vector<float> loadNoise(const std::string & noisePath)
+{
+    return rawFromFileF(dataPath() + "/noise" + noisePath);
 }
 
 bool checkForCompilationError(GLuint shader, const std::string & identifier)

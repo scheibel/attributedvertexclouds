@@ -117,7 +117,7 @@ void BlockWorldInstancing::initializeVAO()
 
 bool BlockWorldInstancing::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/blockworld-instancing/standard.vert");
+    const auto vertexShaderSource = loadShaderSource("/blockworld-instancing/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
@@ -126,7 +126,7 @@ bool BlockWorldInstancing::loadShader()
 
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
 
-    const auto fragmentShaderSource = textFromFile("data/shaders/blockworld.frag");
+    const auto fragmentShaderSource = loadShaderSource("/blockworld.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
     if(fragmentShaderSource_ptr)
         glShaderSource(m_fragmentShader, 1, &fragmentShaderSource_ptr, 0);

@@ -128,7 +128,7 @@ void TrajectoryVertexCloud::initializeVAO()
 
 bool TrajectoryVertexCloud::loadShader()
 {
-    const auto vertexShaderSource = textFromFile("data/shaders/trajectories-avc/standard.vert");
+    const auto vertexShaderSource = loadShaderSource("/trajectories-avc/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
         glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
@@ -138,7 +138,7 @@ bool TrajectoryVertexCloud::loadShader()
     bool success = checkForCompilationError(m_vertexShader, "vertex shader");
 
 
-    const auto tessControlShaderSource = textFromFile("data/shaders/trajectories-avc/standard.tcs");
+    const auto tessControlShaderSource = loadShaderSource("/trajectories-avc/standard.tcs");
     const auto tessControlShaderSource_ptr = tessControlShaderSource.c_str();
     if(tessControlShaderSource_ptr)
         glShaderSource(m_tessControlShader, 1, &tessControlShaderSource_ptr, 0);
@@ -148,7 +148,7 @@ bool TrajectoryVertexCloud::loadShader()
     success &= checkForCompilationError(m_tessControlShader, "tessellation control shader");
 
 
-    const auto tessEvaluationShaderSource = textFromFile("data/shaders/trajectories-avc/standard.tes");
+    const auto tessEvaluationShaderSource = loadShaderSource("/trajectories-avc/standard.tes");
     const auto tessEvaluationShaderSource_ptr = tessEvaluationShaderSource.c_str();
     if(tessEvaluationShaderSource_ptr)
         glShaderSource(m_tessEvaluationShader, 1, &tessEvaluationShaderSource_ptr, 0);
@@ -158,7 +158,7 @@ bool TrajectoryVertexCloud::loadShader()
     success &= checkForCompilationError(m_tessEvaluationShader, "tessellation evaluation shader");
 
 
-    const auto geometryShaderSource = textFromFile("data/shaders/trajectories-avc/standard.geom");
+    const auto geometryShaderSource = loadShaderSource("/trajectories-avc/standard.geom");
     const auto geometryShaderSource_ptr = geometryShaderSource.c_str();
     if(geometryShaderSource_ptr)
         glShaderSource(m_geometryShader, 1, &geometryShaderSource_ptr, 0);
@@ -168,7 +168,7 @@ bool TrajectoryVertexCloud::loadShader()
     success &= checkForCompilationError(m_geometryShader, "geometry shader");
 
 
-    const auto fragmentShaderSource = textFromFile("data/shaders/trajectories-avc/standard.frag");
+    const auto fragmentShaderSource = loadShaderSource("/trajectories-avc/standard.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
     if(fragmentShaderSource_ptr)
         glShaderSource(m_fragmentShader, 1, &fragmentShaderSource_ptr, 0);

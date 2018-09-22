@@ -82,7 +82,7 @@ void TrajectoryRendering::onCreateGeometry()
     std::array<std::vector<float>, 3> noise;
     for (auto i = size_t(0); i < noise.size(); ++i)
     {
-        noise[i] = rawFromFileF("data/noise/noise-"+std::to_string(trajectoryGridSize)+"-"+std::to_string(i)+".raw");
+        noise[i] = loadNoise("/noise-"+std::to_string(trajectoryGridSize)+"-"+std::to_string(i)+".raw");
     }
 
 #pragma omp parallel for
