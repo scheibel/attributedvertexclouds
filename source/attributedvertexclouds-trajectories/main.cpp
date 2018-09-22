@@ -9,7 +9,7 @@
 // https://github.com/cginternals/glbinding
 #include <glbinding/Binding.h>
 #include <glbinding/gl/gl.h>
-#include <glbinding/callbacks.h>
+#include <glbinding/glbinding.h>
 
 #include "TrajectoryRendering.h"
 
@@ -196,7 +196,7 @@ int main(int argc, char ** argv)
 
     glfwMakeContextCurrent(window);
 
-    glbinding::Binding::initialize(false);
+    glbinding::initialize(glfwGetProcAddress, false);
 
 #ifndef NDEBUG
     glbinding::setAfterCallback([](const glbinding::FunctionCall & functionCall) {
@@ -226,6 +226,8 @@ int main(int argc, char ** argv)
 
         glfwSwapBuffers(window);
     }
+
+    rendering.deinitialize();
 
     glfwMakeContextCurrent(nullptr);
 

@@ -30,7 +30,6 @@ BlockWorldRendering::BlockWorldRendering()
 
 BlockWorldRendering::~BlockWorldRendering()
 {
-    glDeleteTextures(1, &m_terrainTexture);
 }
 
 void BlockWorldRendering::onInitialize()
@@ -54,6 +53,11 @@ void BlockWorldRendering::onInitialize()
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+}
+
+void BlockWorldRendering::onDeinitialize()
+{
+    glDeleteTextures(1, &m_terrainTexture);
 }
 
 void BlockWorldRendering::onCreateGeometry()

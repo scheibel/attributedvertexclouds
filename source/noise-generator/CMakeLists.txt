@@ -3,8 +3,7 @@
 # External dependencies
 # 
 
-find_package(GLFW REQUIRED)
-find_package(GLM REQUIRED)
+find_package(glm REQUIRED)
 find_package(glkernel)
 
 find_package(OpenMP QUIET)
@@ -86,7 +85,7 @@ target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
     
-    ${GLFW_LIBRARIES}
+    glm
     glkernel::glkernel
 )
 
@@ -99,7 +98,6 @@ target_compile_definitions(${target}
     PRIVATE
     ${DEFAULT_COMPILE_DEFINITIONS}
     $<$<BOOL:${OPENMP_FOUND}>:USE_OPENMP>
-    GLFW_INCLUDE_NONE
 )
 
 

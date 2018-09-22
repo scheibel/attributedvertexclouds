@@ -57,15 +57,6 @@ Rendering::Rendering(const std::string & name)
 
 Rendering::~Rendering()
 {
-    // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
-    glDeleteQueries(1, &m_query);
-
-    delete m_postprocessing;
-
-    for (auto implementation : m_implementations)
-    {
-        delete implementation;
-    }
 }
 
 void Rendering::addImplementation(Implementation *implementation)
@@ -90,6 +81,21 @@ void Rendering::initialize()
     m_start = std::chrono::high_resolution_clock::now();
 
     setTechnique(0);
+}
+
+void Rendering::deinitialize()
+{
+    onDeinitialize();
+
+    // Flag all aquired resources for deletion (hint: driver decides when to actually delete them; see: shared contexts)
+    glDeleteQueries(1, &m_query);
+
+    delete m_postprocessing;
+
+    for (auto implementation : m_implementations)
+    {
+        delete implementation;
+    }
 }
 
 void Rendering::reloadShaders()

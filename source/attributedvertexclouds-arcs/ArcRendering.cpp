@@ -45,7 +45,6 @@ ArcRendering::ArcRendering()
 
 ArcRendering::~ArcRendering()
 {
-    glDeleteTextures(1, &m_gradientTexture);
 }
 
 void ArcRendering::onInitialize()
@@ -69,6 +68,11 @@ void ArcRendering::onInitialize()
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, gradient.size(), 0, GL_RGB, GL_FLOAT, gradient.data());
     glBindTexture(GL_TEXTURE_1D, 0);
+}
+
+void ArcRendering::onDeinitialize()
+{
+    glDeleteTextures(1, &m_gradientTexture);
 }
 
 void ArcRendering::onCreateGeometry()

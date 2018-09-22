@@ -19,6 +19,7 @@ public:
     virtual ~Rendering();
 
     void initialize();
+    void deinitialize();
 
     void resize(int w, int h);
     void render();
@@ -85,6 +86,7 @@ protected:
     // Subclass interface
 
     virtual void onInitialize() = 0;
+    virtual void onDeinitialize() = 0;
     virtual void onCreateGeometry() = 0;
     virtual void onPrepareRendering() = 0;
     virtual void onFinalizeRendering() = 0;

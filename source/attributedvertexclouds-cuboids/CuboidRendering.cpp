@@ -44,7 +44,6 @@ CuboidRendering::CuboidRendering()
 
 CuboidRendering::~CuboidRendering()
 {
-    glDeleteTextures(1, &m_gradientTexture);
 }
 
 void CuboidRendering::onInitialize()
@@ -70,6 +69,11 @@ void CuboidRendering::onInitialize()
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, gradient.size(), 0, GL_RGB, GL_FLOAT, gradient.data());
     glBindTexture(GL_TEXTURE_1D, 0);
+}
+
+void CuboidRendering::onDeinitialize()
+{
+    glDeleteTextures(1, &m_gradientTexture);
 }
 
 void CuboidRendering::onCreateGeometry()

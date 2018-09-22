@@ -3,8 +3,8 @@
 # External dependencies
 # 
 
-find_package(GLFW REQUIRED)
-find_package(GLM REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(glm REQUIRED)
 find_package(glbinding REQUIRED)
 
 find_package(OpenMP QUIET)
@@ -83,23 +83,23 @@ set_target_properties(${target}
 target_include_directories(${target}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
-    
-    ${GLFW_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIR}
+
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 
-# 
+#
 # Libraries
-# 
+#
 
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
-    
-    ${GLFW_LIBRARIES}
+
+    glfw
+    glm
     glbinding::glbinding
+    glbinding::glbinding-aux
     common
 )
 
