@@ -12,23 +12,23 @@ The project contains multiple executables, including actual AVC implementations 
 
 ### attributedvertexclouds-blockworlds
 
-...
+![blockwords-teaser](docs/images/blockworld-16.jpg)
 
 ### attributedvertexclouds-cuboids
 
-...
+![cuboids-teaser](docs/images/cuboids-8.jpg)
 
 ### attributedvertexclouds-arcs
 
-...
+![arcs-teaser](docs/images/arcs-8.jpg)
 
 ### attributedvertexclouds-polygons
 
-...
+![polygons-teaser](docs/images/polygons-8.jpg)
 
 ### attributedvertexclouds-trajectories
 
-...
+![trajectories-teaser](docs/images/trajectories-16.jpg)
 
 ### noise-generator
 
