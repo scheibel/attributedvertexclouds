@@ -78,8 +78,8 @@ void CuboidRendering::onDeinitialize()
 
 void CuboidRendering::onCreateGeometry()
 {
-    const auto cuboidGridSize = m_gridSize;
-    const auto cuboidCount = cuboidGridSize * cuboidGridSize * cuboidGridSize;
+    const auto cuboidGridSize = static_cast<std::size_t>(m_gridSize);
+    const auto cuboidCount = static_cast<std::size_t>(cuboidGridSize * cuboidGridSize * cuboidGridSize);
     const auto worldScale = glm::vec3(1.0f) / glm::vec3(cuboidGridSize, cuboidGridSize, cuboidGridSize);
 
     for (auto implementation : m_implementations)

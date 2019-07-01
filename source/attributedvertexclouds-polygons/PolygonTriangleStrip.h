@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 #include <glbinding/gl/types.h>
 

@@ -5,8 +5,6 @@
 #include <vector>
 #include <string>
 
-#pragma warning(push)
-#pragma warning(disable : 4201)
 #include <glm/common.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/constants.hpp>
@@ -14,7 +12,6 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#pragma warning(pop)
 
 #include <glbinding/gl/types.h>
 

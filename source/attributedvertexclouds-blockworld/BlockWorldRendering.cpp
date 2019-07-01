@@ -63,7 +63,7 @@ void BlockWorldRendering::onDeinitialize()
 void BlockWorldRendering::onCreateGeometry()
 {
     const auto blockGridSize = m_gridSize;
-    const auto blockCount = blockGridSize * blockGridSize * blockGridSize;
+    const auto blockCount = static_cast<std::size_t>(blockGridSize * blockGridSize * blockGridSize);
     const auto worldScale = glm::vec3(1.0f) / glm::vec3(blockGridSize, blockGridSize, blockGridSize);
 
     for (auto implementation : m_implementations)

@@ -11,12 +11,9 @@
 #include <utility>
 #include <algorithm>
 
-#pragma warning(push)
-#pragma warning(disable : 4201)
 #include <glm/vec4.hpp>
 #include <glm/exponential.hpp>
 #include <glm/geometric.hpp>
-#pragma warning(pop)
 
 #include <cpplocate/cpplocate.h>
 

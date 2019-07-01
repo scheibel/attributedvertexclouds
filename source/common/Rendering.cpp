@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -67,7 +68,7 @@ void Rendering::addImplementation(Implementation *implementation)
 void Rendering::initialize()
 {
     glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
-    glClearDepth(1.0f);
+    glClearDepthf(1.0f);
     glEnable(GL_DEPTH_TEST);
 
     glGenQueries(1, &m_query);
@@ -155,6 +156,11 @@ void Rendering::cameraPosition(glm::vec3 & eye, glm::vec3 & center, glm::vec3 & 
         up = up0;
         break;
     case 3:
+        eye = eye2;
+        center = center1;
+        up = up0;
+        break;
+    case 4:
         eye = eye3;
         center = center1;
         up = up0;
@@ -218,12 +224,12 @@ void Rendering::setCameraTechnique(int i)
 
 void Rendering::setTechnique(int i)
 {
-    if (i < 0 || i >= m_implementations.size())
+    if (i < 0 || static_cast<std::size_t>(i) >= m_implementations.size())
     {
         return;
     }
 
-    m_current = m_implementations.at(i);
+    m_current = m_implementations.at(static_cast<std::size_t>(i));
 
     std::cout << "Switch to " << m_current->name() << " implementation" << std::endl;
 }
@@ -423,7 +429,7 @@ size_t Rendering::measureGPU(std::function<void()> callback, bool on) const
     int value;
     glGetQueryObjectiv(m_query, gl::GL_QUERY_RESULT, &value);
 
-    return value;
+    return static_cast<std::size_t>(value);
 }
 
 size_t Rendering::measureCPU(std::function<void()> callback, bool on) const
@@ -441,7 +447,7 @@ size_t Rendering::measureCPU(std::function<void()> callback, bool on) const
 
     const auto end = std::chrono::high_resolution_clock::now();
 
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    return static_cast<std::size_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
 }
 
 void Rendering::measureCPU(const std::string & name, std::function<void()> callback, bool on) const
@@ -495,5 +501,5 @@ void Rendering::setGridSize(int gridSize)
 
 size_t Rendering::primitiveCount()
 {
-    return m_gridSize * m_gridSize * m_gridSize;
+    return static_cast<std::size_t>(m_gridSize * m_gridSize * m_gridSize);
 }

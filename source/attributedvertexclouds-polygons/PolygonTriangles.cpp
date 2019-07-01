@@ -52,9 +52,9 @@ void PolygonTriangles::initializeVAO()
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
     glBufferData(GL_ARRAY_BUFFER, size() * vertexByteSize(), nullptr, GL_STATIC_DRAW);
 
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 0, size() * sizeof(float) * 3, m_position.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 3, size() * sizeof(float) * 3, m_normal.data());
-    glBufferSubData(GL_ARRAY_BUFFER, size() * sizeof(float) * 6, size() * sizeof(float) * 1, m_colorValue.data());
+    glBufferSubData(GL_ARRAY_BUFFER, static_cast<gl::GLintptr>(size() * sizeof(float) * 0), size() * sizeof(float) * 3, m_position.data());
+    glBufferSubData(GL_ARRAY_BUFFER, static_cast<gl::GLintptr>(size() * sizeof(float) * 3), size() * sizeof(float) * 3, m_normal.data());
+    glBufferSubData(GL_ARRAY_BUFFER, static_cast<gl::GLintptr>(size() * sizeof(float) * 6), size() * sizeof(float) * 1, m_colorValue.data());
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(size() * sizeof(float) * 0));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(size() * sizeof(float) * 3));
@@ -73,7 +73,7 @@ bool PolygonTriangles::loadShader()
     const auto vertexShaderSource = loadShaderSource("/visualization-triangles/standard.vert");
     const auto vertexShaderSource_ptr = vertexShaderSource.c_str();
     if(vertexShaderSource_ptr)
-        glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, 0);
+        glShaderSource(m_vertexShader, 1, &vertexShaderSource_ptr, nullptr);
 
     glCompileShader(m_vertexShader);
 
@@ -83,7 +83,7 @@ bool PolygonTriangles::loadShader()
     const auto fragmentShaderSource = loadShaderSource("/visualization.frag");
     const auto fragmentShaderSource_ptr = fragmentShaderSource.c_str();
     if(fragmentShaderSource_ptr)
-        glShaderSource(m_fragmentShader, 1, &fragmentShaderSource_ptr, 0);
+        glShaderSource(m_fragmentShader, 1, &fragmentShaderSource_ptr, nullptr);
 
     glCompileShader(m_fragmentShader);
 
@@ -109,7 +109,7 @@ bool PolygonTriangles::loadShader()
     return true;
 }
 
-void PolygonTriangles::setPolygon(size_t index, const Polygon & polygon)
+void PolygonTriangles::setPolygon(size_t /*index*/, const Polygon & polygon)
 {
     if (polygon.points.size() < 3)
     {
@@ -214,8 +214,9 @@ size_t PolygonTriangles::componentCount() const
     return 7;
 }
 
-void PolygonTriangles::resize(size_t count)
+void PolygonTriangles::resize(size_t /*count*/)
 {
+    // TODO: should implement
 }
 
 void PolygonTriangles::onRender()
@@ -232,7 +233,7 @@ void PolygonTriangles::onRender()
     glDepthMask(GL_TRUE);
 
     glUseProgram(m_program);
-    glDrawArrays(GL_TRIANGLES, 0, verticesCount());
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<gl::GLint>(verticesCount()));
 
     glUseProgram(0);
 

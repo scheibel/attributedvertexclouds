@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include <glbinding/gl/types.h>
 

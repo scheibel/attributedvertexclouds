@@ -77,7 +77,7 @@ void ArcRendering::onDeinitialize()
 
 void ArcRendering::onCreateGeometry()
 {
-    const auto arcGridSize = m_gridSize;
+    const auto arcGridSize = static_cast<std::size_t>(m_gridSize);
     const auto arcCount = arcGridSize * arcGridSize * arcGridSize;
     const auto worldScale = glm::vec3(1.0f) / glm::vec3(arcGridSize, arcGridSize, arcGridSize);
 

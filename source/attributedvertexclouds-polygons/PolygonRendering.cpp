@@ -77,8 +77,8 @@ void PolygonRendering::onDeinitialize()
 
 void PolygonRendering::onCreateGeometry()
 {
-    const auto polygonGridSize = m_gridSize;
-    const auto polygonCount = polygonGridSize * polygonGridSize * polygonGridSize;
+    const auto polygonGridSize = static_cast<std::size_t>(m_gridSize);
+    const auto polygonCount = static_cast<std::size_t>(polygonGridSize * polygonGridSize * polygonGridSize);
     const auto worldScale = glm::vec3(1.0f) / glm::vec3(polygonGridSize, polygonGridSize, polygonGridSize);
 
     for (auto implementation : m_implementations)

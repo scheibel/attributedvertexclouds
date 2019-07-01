@@ -70,8 +70,8 @@ void TrajectoryRendering::onDeinitialize()
 
 void TrajectoryRendering::onCreateGeometry()
 {
-    const auto trajectoryGridSize = m_gridSize;
-    const auto trajectoryCount = trajectoryGridSize * trajectoryGridSize;
+    const auto trajectoryGridSize = static_cast<std::size_t>(m_gridSize);
+    const auto trajectoryCount = static_cast<std::size_t>(trajectoryGridSize * trajectoryGridSize);
     const auto worldScale = glm::vec3(1.0f) / glm::vec3(trajectoryGridSize, trajectoryGridSize, trajectoryGridSize);
 
     for (auto implementation : m_implementations)
